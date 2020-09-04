@@ -15,7 +15,7 @@ For Stata 12 or older Stata versions you can download the package as a zip, unzi
 
 If you want just update the package, add the option `replace` to previous commands.
 
-If you would like to get older version of the packages, then you should clone the repo and then use rev-list as noted [!here](http://stackoverflow.com/questions/6990484/git-checkout-by-date).
+If you would like to get older version of the packages, then you should clone the repo and then use rev-list as noted [here](http://stackoverflow.com/questions/6990484/git-checkout-by-date).
 
 ## SSC
 
