@@ -1,0 +1,47 @@
+d Stata routines by Federico Belotti
+d
+d This site contains the Stata routines written by Federico Belotti,
+d f.belotti@@ [ econometrics.it | gmail.com ]
+d 
+d You can use the Stata commands available in this directory 
+d at your own risk. The author is not responsible for any mistakes
+d that may be caused by these programs. The author also would like
+d to be cited in your work if you find these programs useful.
+d
+d Upon this reservation -- comments and bug reports are most welcome.
+d
+d
+p .
+p . ^Stata 8 packages^
+p .
+p screening Recoding tool for string variables (version 1.2  21apr2010, with Domenico Depalo)
+p .
+p . ^Stata 10 packages^
+p .
+p ttab Tables with t-test for two-groups mean-comparison (version 1.0.3 10nov2015)
+p xsmle Spatial Panel Data Models (version 1.4.5 5jun2016, with Gordon Hughes and Andrea Piano Mortari)
+p .
+p . ^Stata 11 packages^
+p .
+p sfcross Stochastic frontier models for cross-sectional data (version 1.2.0 28may2015, with S. Daidone, G. Ilardi, V. Atella)
+p sfpanel Stochastic frontier models for panel data (version 1.2.3 22may2015, with S. Daidone, G. Ilardi, V. Atella)
+p tihtest Testing for time invariant unobserved heterogeneity in GLMs for panel data (version 1.0.1 6aug2013)
+p twopm Two-part models (version 1.2.4 23nov2017, with Partha Deb)
+p spm SAR, SEM and Durbin Fixed Effects Spatial Models with Double Weights Matrix for Balanced Panel Data (version 1.1.0 11may2015, with D. Depalo, A. Piano Mortari)
+p recursyst Full Information Maximum Likelihood estimation of a simultaneous three-equation model with mixed latent and observed
+    variables (version 1.0.1 3nov2016)
+p .
+p . ^Stata 13 packages^
+p .
+p bcmp Fully observed recursive mixed-process models via bivariate approximation (version 1.0.2.1 - 6feb2016 - beta release, still under testing)
+p .
+p . ^Stata 14 packages^
+p .
+p sftfe Consistent estimation of fixed-effects stochastic frontier models (version 1.2.6 6may2018, with Giuseppe Ilardi)
+p sreg Spatial differencing estimation (version 1.0.4 - 1may2017 - beta release, still under testing)
+p icio Analysis of Inter-Country Input-Output tables (version 1.1.8 - 11sep2018, beta release still under testing)
+p .
+p . ^Extension of existing packages^
+p .
+p suest Seemingly unrelated estimation (version 3.5.2  29oct2015 - compatibility with xtreg)
+p .
