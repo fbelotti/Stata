@@ -1,0 +1,191 @@
+{smcl}
+{* 18Feb2010}{...}
+{cmd:help screening}{right: ({browse "http://www.stata-journal.com/article.html?article=dm0050":SJ10-3: dm0050})}
+{hline}
+
+{title:Title}
+
+{p2colset 5 18 20 2}{...}
+{p2col:{hi:screening} {hline 2}}Recoding tool for string variables{p_end}
+{p2colreset}{...}
+
+
+{title:Syntax}
+
+{p 8 16 2}
+{cmd:screening}
+ {ifin}{cmd:,} {cmdab:source:s(}{it:varlist}[,{it: {help screening##sourcesopts:sourcesopts}}]{cmd:)} {cmdab:key:s(}[{it:{help screening##matching_rule:matching_rule}}] {cmd:"}{it:string}{cmd:"} [[{it:matching_rule}]
+ {cmd:"}{it:string}{cmd:"} {it:...}]{cmd:)}
+[{it:options}]
+
+
+{synoptset 15 tabbed}{...}
+{synopthdr}
+{synoptline}
+{p2coldent :* {opt source:s(...)}}specify {it:string} source variables to be screened{p_end}
+{p2coldent :* {opt keys(...)}}specify regular expressions (keywords) to be matched with source variables{p_end}
+{synopt:{opt l:etters(#)}}specify the keywords' number of letters to be matched; default is to match keywords as a whole{p_end}
+{synopt:{cmdab:e:xplore(}{it:{help screening##type:type}}{cmd:)}}allow to explore {opt screening} results{p_end}
+{synopt:{opt cases(newvar)}}generate categorical variables showing number of occurrences of each keyword within specified source variables{p_end}
+{synopt:{opt new:code(...)}}generate variable taking as values the position of the keywords specified in {opt keys()}{p_end}
+{synopt:{opt rec:ode(...)}}recode the {opt newcode()} variable according to a user-defined coding scheme{p_end}
+{synopt:{opt check:sources}}check whether source variables contain special characters other than letters{p_end}
+{synopt:{opt tabcheck}}tabulate all cases from {opt checksources}{p_end}
+{synopt:{opt mem:check}}For Stata 11 (or earlier) users, perform a "preventive" memory check{p_end}
+{synopt:{opt nowarn:ings}}suppress all warning messages{p_end}
+{synopt:{opt save}}save in {cmd:r()} the number of cases detected, matching each source with each keyword{p_end}
+{synopt:{opt time}}report elapsed time for execution (seconds){p_end}
+{synoptline}
+{p2colreset}{...}
+{p 4 6 2}* {opt sources()} is required.  The full specification is{break} {opt sources(varlist[, sourcesopts])}{p_end}
+{p 4 6 2}* {opt keys()} is required.  The full specification is{break}
+{cmd:keys(}[{it:matching_rule}] {cmd:"}{it:string}{cmd:"}
+[[{cmd:matching_rule}] {cmd:"}{it:string}{cmd:"} [...]]{p_end}
+{p 4 6 2}The full specification for {opt newcode()} is
+{p_end}
+{phang2}
+{cmd:newcode(}{it:newvar}[, {it:{help screening##newcodeopts:newcodeopts}}]{cmd:)}{p_end}
+{p 4 6 2}The full specification for {opt recode()} is
+{p_end}
+{phang2}
+{cmd:recode(}{it:recoding_rule} {cmd:"}{it:user_defined_code}{cmd:"}
+[...]{cmd:)}{p_end}
+
+
+{marker sourcesopts}{...}
+{synoptset 15}{...}
+{p2col :{it:sourcesopts}}description{p_end}
+{synoptline}
+{synopt:{cmd:lower}}perform a case-insensitive match (lowercase){p_end}
+{synopt:{cmd:upper}}perform a case-insensitive match (uppercase){p_end}
+{synopt:{cmd:trim}}match keywords by removing leading and trailing blanks from sources{p_end}
+{synopt:{cmd:itrim}}match keywords by collapsing sources with consecutive internal blanks to one blank{p_end}
+{synopt:{cmd:removeblank}}match keywords by removing from sources all blanks{p_end}
+{synopt:{cmd:removesign}}match keywords by removing from sources the following signs: {cmd:* + ? / \ % ( ) [ ] { } | . ^ - _ # $}{p_end}
+{synoptline}
+{p2colreset}{...}
+
+
+{marker matching_rule}{...}
+{synoptset 15}{...}
+{p2col :{it:matching_rule}}description{p_end}
+{synoptline}
+{p2col :{cmd:begin}}match keywords at beginning of string{p_end}
+{p2col :{cmd:end}}match keywords at end of string{p_end}
+{synoptline}
+
+
+{marker type}{...}
+{synoptset 10}{...}
+{p2col :{it:type}}description{p_end}
+{synoptline}
+{p2col :{cmd:tab}}tabulate all matched cases for each keyword within each source variable{p_end}
+{p2col :{cmd:count}}display a table of frequency counts of all matched cases for each keyword within each source variable{p_end}
+{synoptline}
+
+
+{marker newcodeopts}{...}
+{synoptset 15}{...}
+{p2col :{it:newcodeopts}}description{p_end}
+{synoptline}
+{p2col :{cmd:replace}}replace {it:newvar} if it already exists{p_end}
+{p2col :{cmd:add}}obtain {it:newvar} as a concatenation of subexpressions
+returned by {opt regexs(n)} or {opt ustrregexs(n)}; {opt regexs(n)} or {opt ustrregexs(n)} must be specified as a
+{it:user_defined_code} in {cmd:recode()}{p_end}
+{p2col :{cmd:label}}attach keywords as value labels to {it:newvar}{p_end}
+{p2col :{cmd:numeric}}convert {it:newvar} from string to numeric; it can be specified only if the {opt recode()} option is specified{p_end}
+{synoptline}
+
+
+{title:Description}
+
+{pstd} {opt screening} checks the content of narrative-text variables and
+freely input text variables specified in the {opt sources()} option, to
+identify observations containing the keyword(s) specified in the {opt keys()}
+option. {ul:Unicode} and long strings (strL) are supported. Its main features are 1) to simply explore matching results by using
+the {opt explore()} option; 2) to create categorical variables identifying all
+matched observations, distinguishing by each single keyword (the {opt cases()}
+option); and 3) to create a new variable (or to replace an existing one)
+taking as values the position of the keywords or a user-defined coding scheme
+(the {opt newcode()} and {opt recode()} options).
+
+
+{title:Options}
+
+{phang}{cmd:sources(}{it:varlist}[, {it:sourcesopts}]{cmd:)} specifies one or
+more {it:string} source variables to be screened.  {cmd:sources()} is required.
+
+{phang}{cmd:keys(}[{it:matching_rule}] {cmd:"}{it:string}{cmd:"}
+[{it:...}]{cmd:)} specifies one or more regular expressions (keywords) to be
+matched with source variables.  {cmd:keys()} is required.
+
+{phang} {cmd:letters(}{it:#}{cmd:)} specifies the number of letters to be
+matched in a keyword.  The number of letters can play a critical role:
+specifying a high number of letters may cause the number of matched
+observations to be artificially low because of mistakes or abbreviations in
+the source variables; on the other hand, matching a small number of letters
+may cause the number of matched observations to be artificially high because
+of the inclusion of uninteresting cases containing the "too short" keyword.
+The default is to match keywords as a whole.
+
+{phang} {opt explore(type)} allows you to explore {cmd:screening} results.
+
+{phang} {opt cases(newvar)} generates a set of categorical variables (as many
+as the number of keywords) showing the number of occurrences of each keyword
+within all specified source variables.
+
+{phang} {cmd:newcode(}{it:newvar}[{cmd:,} {it:newcodeopts}]{cmd:)} generates a
+new (numeric) variable that contains the position of the keywords or the
+regular expressions in {cmd:keys()}.  The coding process is driven by the order
+of keywords or regular expressions.
+
+{phang} {cmd:recode(}{it:recoding_rule} {cmd:"}{it:user_defined_code}{cmd:"}
+[{it:recoding_rule} {cmd:"}{it:user_defined_code}{cmd:"} [...]]{cmd:)} recodes
+the {cmd:newcode()} {it:newvar} according to a user-defined coding scheme.
+{cmd:recode()} must contain at least one {it:recoding_rule} followed by one
+{it:user_defined_code}.  When you specify
+{cmd:recode(1 "}{it:user_defined_code}{cmd:")}, the
+{cmd:"}{it:user_defined_code}{cmd:"} will be used to recode all matched cases
+from the first keyword within the list specified via the {cmd:keys()} option.
+If {cmd:recode(2,3 "}{it:user_defined_code}{cmd:")} is specified, the
+{cmd:"}{it:user_defined_code}{cmd:"} will be used to recode all cases for
+which second and third keywords are simultaneously matched, and so on.  This
+option can only be specified if the {opt newcode()} option is specified.
+
+{phang} {cmd:checksources} checks whether source variables contain special
+characters.  If a matching rule is specified ({cmd:begin} or {cmd:end}),
+{cmd:checksources} checks the sources' boundaries accordingly.
+
+{phang} {cmd:tabcheck} tabulates all cases from {cmd:checksources}.  If there
+are too many cases, the option does not produce a table.
+
+{phang} {cmd:memcheck} performs a "preventive" memory check. This option can be useful only for old Stata releases (<12). When
+{cmd:memcheck} is specified, the command will exit promptly if the allocated
+memory is insufficient to run {cmd:screening}.  When memory is insufficient and
+{cmd:screening} is run without {cmd:memcheck}, the command could run for
+several minutes or even hours before producing the message
+{cmd:no room to add more variables}.
+
+{phang} {cmd:nowarnings} suppresses all warning messages.
+
+{phang} {cmd:save} saves in {cmd:r()} the number of cases detected, matching
+each source with each keyword.
+
+{phang} {cmd:time} reports elapsed time for execution (seconds).
+
+
+{title:Example}
+
+{phang}{cmd:. screening, sources(make, lower) explore(tab) keys(amc buick) letters(2 4) }
+
+
+{title:Also see}
+
+{p 4 14 2}
+Article:  {it:Stata Journal}, volume 10, number 3: {browse "http://www.stata-journal.com/article.html?article=dm0050":dm0050}
+
+{p 4 14 2}{space 3}Help:  {manhelp replace D}, {manhelp generate D}, {manhelp regexm() D}
+
+{p 4 14 2}
+{space 3}FAQs:  {browse "http://www.stata.com/support/faqs/data/regex.html":What are regular expressions and how can I use them in Stata?}
+{p_end}
