@@ -1,7 +1,6 @@
 # Stata
 
-A collection of my Stata routines. You can use the Stata commands available in this repo at your own risk. The author is not responsible for any mistake that may be caused by these programs. The author also would like to be cited in your work if you find these programs useful.
-Upon this reservation, comments and pull-request are most welcome.
+A collection of my Stata routines. If you find them useful, please cite! **Comments** and **pull-request** are _most welcome_.
 
 # How to install the packages 
 
@@ -22,4 +21,8 @@ If you would like to get older version of the packages, then you should clone th
 Some of the older packages are also available via the Boston SSC archive. To install them you can type 
 
 `. ssc install <package_name>`
+
+# Disclaimer
+
+_You can use the Stata commands available in this repo at your own risk. The author is not responsible for any mistake that may be caused by these programs._ 
 
