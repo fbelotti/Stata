@@ -1,0 +1,25 @@
+
+v 3
+d screening.  Recoding tool for string variables (version 1.2.1  6feb2020).
+
+{pstd}
+{opt screening} checks the content of narrative-text variables and
+freely input text variables specified in the {opt sources()} option, to
+identify observations containing the keyword(s) specified in the {opt keys()}
+option.  Its main features are 1) to simply explore matching results by using
+the {opt explore()} option; 2) to create categorical variables identifying all
+matched observations, distinguishing by each single keyword (the {opt cases()}
+option); and 3) to create a new variable (or to replace an existing one)
+taking as values the position of the keywords or a user-defined coding scheme
+(the {opt newcode()} and {opt recode()} options). This version handles Unicode
+and long strings (strL).
+
+d
+d Authors: Federico Belotti, Domenico Depalo.
+d Distribution-Date: 20120819
+
+
+* uploaded on 6 feb 2020
+
+f screening/screening.ado
+f screening/screening.hlp
