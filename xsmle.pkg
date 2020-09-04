@@ -1,0 +1,87 @@
+
+v 3
+d xsmle.  Spatial Panel Data Models (version 1.4.5 5jun2017). 
+d
+d 
+d {cmd:xsmle} fits fixed or random effects spatial models for balanced panel data. See the 
+d {help mi} prefix command in order to use {cmd:xsmle} in the unbalanced case. Consider the 
+d following general specification for the spatial panel data model:
+d
+d y_it = tau*y_it-1 + psi*W*y_it-1 + rho*W*y_it + beta*X_it + D*Z_it*theta + a_i + gamma_t + v_it 
+d v_it = lambda*E*v_it + u_it
+d
+d where u_it is a normally distributed error term, W is the spatial matrix for the autoregressive 
+d component, D the spatial matrix for the spatially lagged independent variables, E the spatial 
+d matrix for the idiosyncratic error component. a_i is the individual fixed or random effect 
+d and gamma_t is the time effect.
+d
+d {cmd:xsmle} fits the following nested models:
+d
+d {cmd:i)} the SAR model with lagged dependent variable (theta=lambda=psi=0) 
+d
+d y_it = tau*y_it-1 + rho*W*y_it + beta*X_it + a_i + gamma_t + u_it 
+d
+d {cmd:ii)} the SAR model with time and space lagged dependent variable (theta=lambda=tau=0) 
+d
+d y_it = psi*W*y_it-1 + rho*W*y_it + beta*X_it + a_i + gamma_t + u_it
+d		
+d {cmd:iii)} the full dynamic SAR model  (theta=lambda=0) 
+d
+d y_it = tau*y_it-1 + psi*W*y_it-1 + rho*W*y_it + beta*X_it + a_i + gamma_t + u_it 
+d 
+d {cmd:iv)} the classical SAR model  (theta=lambda=psi=tau=0) 
+d
+d y_it =  rho*W*y_it + beta*X_it + a_i + gamma_t + u_it 	
+d	
+d {cmd:v)} the SDM model with lagged dependent variable (lambda=psi=0)
+d
+d y_it = tau*y_it-1 + rho*W*y_it + beta*X_it + D*Z_it*theta + a_i + gamma_t + u_it 
+d		
+d {cmd:vi)} the SDM model with time and space lagged dependent variable (lambda=tau=0)
+d
+d y_it = tau*y_it-1 + rho*W*y_it + beta*X_it + D*Z_it*theta + a_i + gamma_t + u_it 
+d		
+d {cmd:vii)} the full dynamic SDM model  (lambda=0)
+d
+d y_it = tau*y_it-1 + psi*W*y_it-1 + rho*W*y_it + beta*X_it + D*Z_it*theta + a_i + gamma_t + u_it 
+d		
+d {cmd:viii)} the classical SDM model  (lambda=tau=psi=0)
+d
+d y_it = rho*W*y_it + beta*X_it + D*Z_it*theta + a_i + gamma_t + u_it		
+d		
+d {cmd:xsmle} allows to use a different weighting matrix for the spatially lagged dependent variable (W) and the spatially lagged regressors (D) together with a different sets of explanatory (X_it) and spatially lagged regressors (Z_it). 
+d The default is to use W=D and X_it=Z_it.
+d
+d {cmd:ix)} the SAC model (theta=tau=psi=0) 
+d
+d y_it = rho*W*y_it + beta*X_it + a_i + gamma_t + v_it  
+d v_it = lambda*E*v_it + u_it
+d
+d for which {cmd:xsmle} allows to use a different weighting matrix for the spatially lagged dependent variable (W) and the error term (E). {* The default is to use W=E.}
+d
+d {cmd:x)} the SEM model (rho=theta=tau=psi=0) 
+d
+d y_it = beta*X_it + a_i + gamma_t + v_it 
+d v_it = lambda*E*v_it + u_it
+d
+d {cmd:xi)} the GSPRE model (rho=theta=tau=psi=0) 
+d
+d y_it = beta*X_it + a_i + v_it
+d a_i = phi*W*a_i + mu_i
+d v_it = lambda*E*v_it + u_it
+d
+d where also the random effects have a spatial autoregressive form.
+d
+d
+d Authors: Federico Belotti, Gordon Hughes, Andrea Piano Mortari.
+d Distribution-Date: 20140312 
+
+* uploaded on 20 Dec 2016
+
+f xsmle/xsmle.ado
+f xsmle/xsmle.sthlp
+f xsmle/xsmle_p.ado
+f xsmle/xsmle_postestimation.sthlp
+F xsmle/lxsmle.mlib
+
+
