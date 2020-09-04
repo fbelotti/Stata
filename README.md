@@ -19,7 +19,7 @@ If you would like to get older version of the packages, then you should clone th
 
 ## SSC
 
-Some of the older packages are available also via the Boston SSC archive. To install them you can type 
+Some of the older packages are also available via the Boston SSC archive. To install them you can type 
 
 `. ssc install <package_name>`
 
