@@ -1,6 +1,6 @@
 # Stata
 
-A collection of my Stata routines. You can use the Stata commands available in this repo at your own risk. The author is not responsible for any mistakes that may be caused by these programs. The author also would like to be cited in your work if you find these programs useful.
+A collection of my Stata routines. You can use the Stata commands available in this repo at your own risk. The author is not responsible for any mistake that may be caused by these programs. The author also would like to be cited in your work if you find these programs useful.
 Upon this reservation, comments and pull-request are most welcome.
 
 # How to install the packages 
