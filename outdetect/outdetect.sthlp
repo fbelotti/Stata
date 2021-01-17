@@ -267,8 +267,8 @@ The ITC reports the value of the statistic of choice, as a function of how many 
 {marker examples}{...}
 {title:Examples}
 
+{pstd}Load demo data{p_end}
 {phang2}
-{cmd: Load demo data}
 {cmd:. use https://raw.github.com/fbelotti/Stata/master/dta/outdetect, clear}
 {p_end}
 {phang2}
