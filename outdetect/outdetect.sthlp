@@ -272,10 +272,13 @@ The ITC reports the value of the statistic of choice, as a function of how many 
 {cmd:. use https://raw.github.com/fbelotti/Stata/master/dta/outdetect, clear}
 {p_end}
 
-{pstd}Detect outliers:{p_end}
-{phang2}
-{cmd:. outdetect pce}
-{p_end}
+{pstd}Run {cmd:outdetect} using {help weights}:{p_end}
+{phang2}{cmd:. outdetect pce [pweight=weight]}{p_end}
+
+{pstd}Setup using {help svyset}:{p_end}
+{phang2}{cmd:. svyset [pweight=weight]}{p_end}
+{phang2}{cmd:. outdetect pce}{p_end}
+
 {phang2}
 {cmd:. outdetect pce, pline(5200)}
 {p_end}
