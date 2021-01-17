@@ -280,7 +280,7 @@ The ITC reports the value of the statistic of choice, as a function of how many 
 {phang2}{cmd:. outdetect pce}{p_end}
 
 {phang2}
-{cmd:. outdetect pce, pline(5200)}
+{cmd:. outdetect pce, pline(215000)}
 {p_end}
 {phang2}
 {cmd:. outdetect pce, norm(log)}
@@ -294,9 +294,8 @@ The ITC reports the value of the statistic of choice, as a function of how many 
 {phang2}
 {cmd:. outdetect pce, graph(itc(10: abs mean))}
 {p_end}
-{phang2}
-{cmd:. outdetect pce, graph(itc(10: pg2 pline(povertyline)))}
-{p_end}
+{phang2}{cmd:. generate povertyline = 215000}{p_end}
+{phang2}{cmd:. outdetect pce, graph(itc(10: pg2 pline(povertyline)))}{p_end}
 {phang2}
 {cmd:. outdetect pce, graph(qqplot)}
 {p_end}
