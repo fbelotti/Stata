@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 1.0.0  28oct2020}{...}
+{* *! version 1.0.1  17jan2021}{...}
 {viewerjumpto "Syntax" "outdetect##syntax"}{...}
 {viewerjumpto "Description" "outdetect##description"}{...}
 {viewerjumpto "Options" "outdetect##options"}{...}
@@ -210,6 +210,9 @@ z < -alpha (bottom outlier).{p_end}
 {phang}
 {opt replace} replaces any existing variable named {it:_out} with the new {it:_out} variable created by issuing {cmd:outdetect}.
 
+{phang}
+{opt reweight} creates a new variable containing the post-detection adjusted weights. Only if {help weights} or {help svyset} are used to specify a weight variable.
+
 
 {dlgtab:Reporting}
 
@@ -264,6 +267,8 @@ The ITC reports the value of the statistic of choice, as a function of how many 
 {marker examples}{...}
 {title:Examples}
 
+{phang2}
+{cmd:. use https://raw.github.com/fbelotti/Stata/master/dta/outdetect, clear}
 {phang2}
 {cmd:. outdetect pce}
 {p_end}
