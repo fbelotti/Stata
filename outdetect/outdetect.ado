@@ -1,6 +1,6 @@
 
 ** Author: Federico Belotti
-*! version 3.0.4 - 17jan2021
+*! version 3.0.5 - 27jan2021
 *! See below for versioning
 
 capture program drop outdetect
@@ -216,6 +216,16 @@ if "`_itc_trim_extent'" == "" {
 		tempvar touseup
 		qui gen `touseup'=1
 		qui replace `touseup' = . if `j'<0 & missing(`j')==0
+		markout `touse' `touseup'
+	}
+
+	if "`weight_type'"!="" {
+		qui count if missing(`wvar')==1
+		di in gr "Warning: `wvar_name' has `r(N)' missing values. NOT used in calculations."
+		*** Update touse variable to discard missing wgt values
+		tempvar touseup
+		qui gen `touseup'=1
+		qui replace `touseup' = . if missing(`wvar')==1
 		markout `touse' `touseup'
 	}
 
@@ -653,8 +663,7 @@ if "`_itc_trim_extent'" == "" {
 } /* close trimming() */
 else {
 
-/// QUIETLY FROM NOW ON
-	qui {
+
 
 	/* Why is this here ? muted
 	// Check if MAD is 0. This is crucial.
@@ -687,6 +696,46 @@ else {
 			markout `touse' `__mark_duplicates__'
 	}
 	*/
+
+	// Give warnings on data here
+	// Also implement nozero and nonegative options
+	qui count if missing(`j')==1
+	if `r(N)'>0 di in gr "Warning: `j' has `r(N)' missing value(s)."
+
+	qui count if `j'==0
+	if `r(N)'>0 & "`nozero'" == "" di in gr "Warning: `j' has `r(N)' zero values. Used in calculations."
+	else if (`r(N)'>0 & "`nozero'" != "") {
+		di in gr "Warning: `j' has `r(N)' zero values. NOT used in calculations."
+		*** Update touse variable to discard zero values
+		tempvar touseup
+		qui gen `touseup'=1
+		qui replace `touseup' = . if `j'==0
+		markout `touse' `touseup'
+	}
+
+	qui count if `j'<0 & missing(`j')==0
+	if `r(N)'>0 & "`negative'" == "" di in gr "Warning: `j' has `r(N)' negative value(s). Used in calculations."
+	else if (`r(N)'>0 & "`negative'" != "") {
+		di in gr "Warning: `j' has `r(N)' negative value(s). NOT used in calculations."
+		*** Update touse variable to discard zero values
+		tempvar touseup
+		qui gen `touseup'=1
+		qui replace `touseup' = . if `j'<0 & missing(`j')==0
+		markout `touse' `touseup'
+	}
+
+	if "`weight_type'"!="" {
+		qui count if missing(`wvar')==1
+		di in gr "Warning: `wvar_name' has `r(N)' missing values. NOT used in calculations."
+		*** Update touse variable to discard missing wgt values
+		tempvar touseup
+		qui gen `touseup'=1
+		qui replace `touseup' = . if missing(`wvar')==1
+		markout `touse' `touseup'
+	}
+
+	/// QUIETLY FROM NOW ON
+		qui {
 
 	/// Compute welfare indicators (pre-detection)
 
@@ -1101,3 +1150,4 @@ exit
 ** version 3.0.2 - 15nov2020 - Added options: restyled graph() options, added new indicators for the incremental trimming curve (mean, h, pg, pg2) and absolute option.
 ** version 3.0.3 - 7jan2021 - Bug fixed (exact option of confirm)
 ** version 3.0.4 - 17jan2021 - Added option "reweight" to create the post-detection adjusted weight variable
+** version 3.0.4 - 17jan2021 - Added warning foir "missing" weight variable
