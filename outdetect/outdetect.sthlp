@@ -28,7 +28,8 @@
 {synopthdr:options}
 {synoptline}
 {syntab:Main}
-{synopt :{cmdab:norm:alize(}{it:{help outdetect##normtype:normtype}})}specify the method for transforming {help varname} into a Normal distribution{p_end}
+{synopt :{cmdab:norm:alize(}{it:{help outdetect##normtype:normtype}})}specify the method for normalizing {help varname}{p_end}
+{synopt :{cmdab:bestnorm:alize}}specify that the best among the available transformations has to be used for normalizing {help varname}{p_end}
 {synopt :{cmdab:zscore(}{it:{help outdetect##stat1:stat1}} {it:{help outdetect##stat2:stat2}})}define the {it:z}-score of the normalized variable{p_end}
 {synopt :{opt alpha(#)}}specify the threshold of the outlier detection region; default is 3{p_end}
 {synopt :{opt out:liers(bottom|top|both)}}specify whether outliers are to be flagged at the bottom, top, or on both sides of the distribution of {help varname}{p_end}
@@ -150,6 +151,10 @@ z < -alpha (bottom outlier).{p_end}
 
 {phang2}
 {cmd:normalize(none)} does not apply any transformation (varname used as is).
+
+{phang}
+{opt bestnormalize} selects the best transformation according to the value of the Pearson P statistic divided by its degrees of freedom (df). Since this ratio converges to 1 when the data closely follows a Gaussian distribution,
+it can be compared between transformations as an absolute measure of the departure from normality. When natural logarithm and inverse hyperbolic sine transformations show the same ratio, the former is selected. When this option is specified, {cmd:outdetect} stores the Pearson/df ratio corresponding to the best normalizing transformation.
 
 {phang}
 {opt zscore(stat1 stat2)} specifies how to define the {it:z}-score of the normalized variable. If {it:x} is the normalized variable, the {it:z}-score is defined as {it: z = (x - stat1)/stat2}.
@@ -307,10 +312,15 @@ The ITC reports the value of the statistic of choice, as a function of how many 
 {pstd}
 {cmd:outdetect} stores the following in {cmd:r()}:
 
-{synoptset 15 tabbed}{...}
+{synoptset 17 tabbed}{...}
 {p2col 5 15 19 2: Scalars}{p_end}
-{synopt:{cmd:r(N_trimmed)}}number of used observations{p_end}
+{synopt:{cmd:r(N_raw)}}number of used observations{p_end}
 {synopt:{cmd:r(N_trimmed)}}number of observations after outlier trimming{p_end}
+{synopt:{cmd:r(bestnormalize)}}1 if bestnormalize, 0 otherwise{p_end}
+{synopt:{cmd:r(pearson_df)}}ratio of the Pearson P statistic and df{p_end}
+{synopt:{cmd:r(alpha)}}threshold used for defining the outlier detection region{p_end}
+
+
 
 {p2col 5 25 29 2: Macros}{p_end}
 {synopt:{cmd:r(normalization)}}applied normalization{p_end}

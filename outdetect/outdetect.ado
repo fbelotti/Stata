@@ -1,6 +1,6 @@
 
 ** Author: Federico Belotti
-*! version 3.0.5 - 27jan2021
+*! version 3.1.0 - 13mar2021
 *! See below for versioning
 
 capture program drop outdetect
@@ -10,8 +10,8 @@ syntax varlist(max=1) [if] [in] [pw aw/] [, ///
 							REWeight ///
 							noZero noNegative ///
 							REPLACE noGenerate ///
-						    NORMalize(string) OUTliers(string) ///
-							Graph(string) EXCEL(string)  ///
+						    NORMalize(string) BESTNORMalize ///
+							OUTliers(string) Graph(string) EXCEL(string)  ///
 						    ZSCORE(string) PLINE(string) ///
 						    noPERCent Alpha(real 3) MADFactor(real 1.4826022) SFormat(string) IFormat(string) ///
 						    SFactor(real 1.1926) QFactor(real 2.2219) ///
@@ -20,7 +20,11 @@ syntax varlist(max=1) [if] [in] [pw aw/] [, ///
 
 di ""
 loc cutoff `alpha'
-if "`normalize'"=="" local normalize yj
+if "`normalize'"=="" {
+	local normalize none
+	if "`bestnormalize'" == "" di in green "Warning: `varlist' is left unnormalized."
+	local _ttitle "None"
+}
 
 if "`timer'"!="" timer clear
 if "`timer'"!="" timer on 1
@@ -173,6 +177,16 @@ if "`timer'"!="" timer off 1
 loc touse `back_touse'
 */
 
+***********************************************
+************** Options ERRORS *****************
+***********************************************
+
+if "`normalize'"!="none" & "`bestnormalize'"!="" {
+	di as error "normalize() and `bestnormalize' are mutually exclusive"
+	exit 198
+}
+
+
 if "`_itc_trim_extent'" == "" {
 
 	/* Initialize _out variable */
@@ -209,6 +223,7 @@ if "`_itc_trim_extent'" == "" {
 	}
 
 	qui count if `j'<0 & missing(`j')==0
+	loc AreThereNegValues `r(N)'
 	if `r(N)'>0 & "`negative'" == "" di in gr "Warning: `j' has `r(N)' negative value(s). Used in calculations."
 	else if (`r(N)'>0 & "`negative'" != "") {
 		di in gr "Warning: `j' has `r(N)' negative value(s). NOT used in calculations."
@@ -221,12 +236,14 @@ if "`_itc_trim_extent'" == "" {
 
 	if "`weight_type'"!="" {
 		qui count if missing(`wvar')==1
-		di in gr "Warning: `wvar_name' has `r(N)' missing values. NOT used in calculations."
-		*** Update touse variable to discard missing wgt values
-		tempvar touseup
-		qui gen `touseup'=1
-		qui replace `touseup' = . if missing(`wvar')==1
-		markout `touse' `touseup'
+		if `r(N)'>0 {
+			di in gr "Warning: `wvar_name' has `r(N)' missing values. NOT used in calculations."
+			*** Update touse variable to discard missing wgt values
+			tempvar touseup
+			qui gen `touseup'=1
+			qui replace `touseup' = . if missing(`wvar')==1
+			markout `touse' `touseup'
+		}
 	}
 
 	mata: _hhb_MADn("`j'","`touse'",`madfactor',0,"`weight_type'","`wvar'")
@@ -244,7 +261,7 @@ if "`_itc_trim_extent'" == "" {
 		loc __frac__ = `__max__'/`__n__'*100
 
 		if `__frac__'>30 {
-			di in yel "WARNING: `j' has more than 30% (" %4.2f `__frac__' "%) obs duplicated ..."
+			di in yel "Warning: `j' has more than 30% (" %4.2f `__frac__' "%) obs duplicated ..."
 			di in yel "You can use option -forcefraction(#)- to exclude the block of duplicate values for detection purposes."
 		}
 
@@ -372,7 +389,18 @@ if "`_itc_trim_extent'" == "" {
 	#del cr
 
 	loc todrop_and_rename 0
-	if "`normalize'"!="" {
+
+	if "`bestnormalize'"!="" | "`normalize'"!="none" {
+		if `AreThereNegValues' > 0 {
+			if "`normalize'"!="yj" {
+				local normalize "yj"
+				if "`bestnormalize'"!="" local bestnormalize
+				noi di in gr "Warning: Yeo and Johnson (2000) is the only available transformation since `j' has negative value(s)"
+			}
+		}
+	}
+
+	if "`normalize'"!="none" {
 		tempvar jj jjj
 		cap clonevar `jj'=`j'
 		noi _out_normalize `jj' if `touse', transformation(`normalize') outputvar(`jjj')
@@ -392,6 +420,38 @@ if "`_itc_trim_extent'" == "" {
 			noi m _od = _out_getdata("`jjj'", "`wvar'", "`weight_type'", "`touse'")
 		}
  	}
+
+	if "`bestnormalize'"!="" {
+
+		local atransf "ln bcox asinh sqrt"
+		noi di in gr "Finding best normalization ..."
+		m _P_d_dfs = J(0,1,.)
+		m _Transf = J(0,1,"")
+		m _Transf_ti = J(0,1,"")
+		foreach tr of local atransf  {
+			tempvar jj jjj_`tr'
+			cap clonevar `jj'=`j'
+			noi _out_normalize `jj' if `touse', transformation(`tr') outputvar(`jjj_`tr'')
+			m _Transf_ti = _Transf_ti \ "`r(transftitle)'"
+			putmata `jjj_`tr'' if `touse', replace
+			noi m _out_pearson_test(`jjj_`tr'')
+			m _P_d_dfs = _P_d_dfs \ st_numscalar("_P_d_df")
+			m _Transf = _Transf \ "`tr'"
+		}
+		noi m _out_bestnorm_sel(_P_d_dfs,_Transf,_Transf_ti)
+		noi di as res "`_bestt'" in gr " is the best (Pearson/df = " %6.3f _best_p_def ")"
+		tempvar jjj
+		clonevar `jjj' = `jjj_`_bestt''
+		local normalize "`_bestt'"
+
+		markout `touse' `jjj'
+		loc todrop_and_rename 1
+		loc transf "`_bestt'"
+		loc transftitle "`_bestt_ti'"
+		// This is important to get into the structure _od the normalized variable
+		noi m _od = _out_getdata("`jjj'", "`wvar'", "`weight_type'", "`touse'")
+	}
+
 
 
 	/// Compute required robust scale measure
@@ -641,6 +701,13 @@ if "`_itc_trim_extent'" == "" {
 	return mat out`_bylev' = _out_detected`_bylev'
 	return sca alpha = `alpha'
 	ret local normalization "`transf'"
+	if "`bestnormalize'"!="" {
+		ret scalar bestnormalize = 1
+		ret scalar pearson_df = _best_p_def
+	}
+	else ret scalar bestnormalize = 0
+
+
 	qui count if `touse_raw'==1
 	return scalar N_raw = r(N)
 	qui count if `touse'==1
@@ -726,12 +793,14 @@ else {
 
 	if "`weight_type'"!="" {
 		qui count if missing(`wvar')==1
-		di in gr "Warning: `wvar_name' has `r(N)' missing values. NOT used in calculations."
-		*** Update touse variable to discard missing wgt values
-		tempvar touseup
-		qui gen `touseup'=1
-		qui replace `touseup' = . if missing(`wvar')==1
-		markout `touse' `touseup'
+		if `r(N)'>0 {
+			di in gr "Warning: `wvar_name' has `r(N)' missing values. NOT used in calculations."
+			*** Update touse variable to discard missing wgt values
+			tempvar touseup
+			qui gen `touseup'=1
+			qui replace `touseup' = . if missing(`wvar')==1
+			markout `touse' `touseup'
+		}
 	}
 
 	/// QUIETLY FROM NOW ON
@@ -1039,37 +1108,33 @@ program define _out_normalize, rclass
 		}
 	}
 	else if "`normalize'" == "asinh" {
-		qui gen double `outputvar' = asinh(`varlist')
+		qui gen double `outputvar' = asinh(`varlist')  if `touse'
 		loc _ttitle "inverse hyperbolic sine"
 	}
 	else if "`normalize'" == "ln" {
-		qui gen double `outputvar' = ln(`varlist')
+		qui gen double `outputvar' = ln(`varlist')  if `touse'
 		loc _ttitle "natural logarithm"
 	}
 	else if "`normalize'" == "log" {
-		qui sum `varlist', mean
+		qui sum `varlist' if `touse', mean
 		//min_a <- max(0, -(min(x) - eps))
 		local a = max(`=-(`r(min)'-0.001)',0)
-		qui gen double `outputvar' = log(`varlist' + `a')
+		qui gen double `outputvar' = log(`varlist' + `a')  if `touse'
 		loc _ttitle "ln(x + a) with a = max(0, -(min(x) - 0.0001))"
 	}
 	else if "`normalize'" == "log10" {
-		qui sum `varlist', mean
+		qui sum `varlist' if `touse', mean
 		//min_a <- max(0, -(min(x) - eps))
 		local a = max(`=-(`r(min)'-0.001)',0)
-		qui gen double `outputvar' = log10(`varlist' + `a')
+		qui gen double `outputvar' = log10(`varlist' + `a') if `touse'
 		loc _ttitle "log10(x + a) with a = max(0, -(min(x) - 0.0001))"
 	}
 	else if "`normalize'" == "sqrt" {
-		qui sum `varlist', mean
+		qui sum `varlist' if `touse', mean
 		//min_a <- max(0, -min(x))
 		local a = max(`=-`r(min)'',0)
-		qui gen double `outputvar' = sqrt(`varlist' + `a')
+		qui gen double `outputvar' = sqrt(`varlist' + `a') if `touse'
 		local _ttitle "Square root"
-	}
-	else if "`normalize'" == "none" {
-		di in green "Warning: `j' is left unnormalized."
-		local _ttitle "None"
 	}
 
 	/*qui sum `outputvar'
@@ -1089,13 +1154,13 @@ program define ParseNorm
 	args retmac colon norm
 
 	local 0 ", `norm'"
-	syntax [, LOG LOG10 LN YJ BCox ASinh Sqrt NONE * ]
+	syntax [, LOG LOG10 LN YJ BCox ASinh Sqrt * ]
 
 	if `"`options'"' != "" {
 		di as error "Specified normalization method is not allowed"
 		exit 198
 	}
-	local wc : word count `log' `log10' `ln' `yj' `bcox' `asinh' `sqrt' `none'
+	local wc : word count `log' `log10' `ln' `yj' `bcox' `asinh' `sqrt'
 
 	if `wc' > 1 {
 		di as error "normalize() invalid, only " /*
@@ -1106,6 +1171,7 @@ program define ParseNorm
 	if `wc' == 0 {
 		c_local `retmac' "yj"
 	}
+
 	else {
 		if "`asinh'" == "asinh" c_local `retmac' "asinh"
 		if "`ln'" == "ln" c_local `retmac' "ln"
@@ -1114,7 +1180,6 @@ program define ParseNorm
 		if "`yj'" == "yj" c_local `retmac' "yj"
 		if "`bcox'" == "bcox" c_local `retmac' "bcox"
 		if "`sqrt'" == "sqrt" c_local `retmac' "sqrt"
-		if "`none'" == "none" c_local `retmac' "none"
 	}
 
 end
@@ -1151,3 +1216,4 @@ exit
 ** version 3.0.3 - 7jan2021 - Bug fixed (exact option of confirm)
 ** version 3.0.4 - 17jan2021 - Added option "reweight" to create the post-detection adjusted weight variable
 ** version 3.0.4 - 17jan2021 - Added warning foir "missing" weight variable
+** version 3.1.0 - 13mar2021 - Added bestnormalize option
