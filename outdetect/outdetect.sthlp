@@ -154,7 +154,8 @@ z < -alpha (bottom outlier).{p_end}
 
 {phang}
 {opt bestnormalize} selects the best transformation according to the value of the Pearson P statistic divided by its degrees of freedom (df). Since this ratio converges to 1 when the data closely follows a Gaussian distribution,
-it can be compared between transformations as an absolute measure of the departure from normality. When natural logarithm and inverse hyperbolic sine transformations show the same ratio, the former is selected. When this option is specified, {cmd:outdetect} stores the Pearson/df ratio corresponding to the best normalizing transformation.
+it can be compared between transformations as an absolute measure of the departure from normality. When natural logarithm and inverse hyperbolic sine transformations show the same ratio, the former is selected.
+When this option is specified, {cmd:outdetect} stores the Pearson/df ratio corresponding to the best normalizing transformation.
 
 {phang}
 {opt zscore(stat1 stat2)} specifies how to define the {it:z}-score of the normalized variable. If {it:x} is the normalized variable, the {it:z}-score is defined as {it: z = (x - stat1)/stat2}.
