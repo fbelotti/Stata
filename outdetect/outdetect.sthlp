@@ -46,8 +46,8 @@
 {synopt :{cmd:pline(# | {help varname})}}specify a poverty line and report poverty estimates{p_end}
 {synopt :{opt sformat(%fmt)}}specify format for summary statistics panel{p_end}
 {synopt :{opt iformat(%fmt)}}specify format for inequality estimates panel{p_end}
-{synopt :{opt se}}report standard errors of statistics{p_end}
-{synopt :{opt diff}}test differences between "raw" and "trimmed" statistics{p_end}
+{synopt :{opt se}}report standard errors of statistics (still under development){p_end}
+{synopt :{opt diff}}test differences between "raw" and "trimmed" statistics (still under development){p_end}
 {synopt :{cmd:excel({help filename} [, replace])}}export output in Excel{p_end}
 
 {syntab:Graphics}
