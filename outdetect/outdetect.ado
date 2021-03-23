@@ -18,14 +18,10 @@ syntax varlist(max=1) [if] [in] [pw aw/] [, ///
 						    NOI FORCE FORCEFraction(real 0.5) TIMER ]
 
 
-di ""
-loc cutoff `alpha'
-if "`normalize'"=="" {
-	local normalize none
-	if "`bestnormalize'" == "" di in green "Warning: `varlist' is left unnormalized."
-	local _ttitle "None"
-}
 
+di ""
+
+loc cutoff `alpha'
 if "`timer'"!="" timer clear
 if "`timer'"!="" timer on 1
 
@@ -37,6 +33,10 @@ else loc sfmt "`sformat'"
 if "`iformat'"=="" loc ifmt %9.4f
 else loc ifmt "`iformat'"
 
+if "`replace'"!="" & "`generate'"!="" {
+	di as error "replace and nogenerate options are mutually exclusive"
+	error 198
+}
 
 /*
 capt findfile erepost.ado
@@ -95,6 +95,12 @@ else if "`r(wvar)'"=="" & "`weight'"=="" {
 	qui gen byte `wvar'= 1 if `touse'
 	loc weight_type ""
 }
+
+*****************************************
+******** Parsing of normalization *******
+*****************************************
+
+ParseNorm normalize : `"`normalize'"'
 
 ************************************
 ******** Parsing of outliers *******
@@ -177,14 +183,6 @@ if "`timer'"!="" timer off 1
 loc touse `back_touse'
 */
 
-***********************************************
-************** Options ERRORS *****************
-***********************************************
-
-if "`normalize'"!="none" & "`bestnormalize'"!="" {
-	di as error "normalize() and `bestnormalize' are mutually exclusive"
-	exit 198
-}
 
 
 if "`_itc_trim_extent'" == "" {
@@ -192,12 +190,16 @@ if "`_itc_trim_extent'" == "" {
 	/* Initialize _out variable */
 	/* Check before if -clear- has been specified */
 	cap confirm v _out`_bylev', exact
-	if _rc == 0 & "`replace'"=="" {
-		di as error "Use the " in yel "replace " as error "option to replace the existing " in yel "_out " as error "variable"
+	if _rc == 0 & "`replace'"=="" & "`generate'"=="" {
+		di as error "_out variable altready exists. Use the " in yel "replace " as error "or the " in yel "nogenerate" as error " options"
 		exit 198
 	}
 	else if _rc == 0 & "`replace'"!="" {
 		cap drop _out`_bylev'
+		tempvar _out`_bylev'
+		qui gen byte `_out`_bylev'' = .
+	}
+	else if _rc == 0 & "`generate'"!=""{
 		tempvar _out`_bylev'
 		qui gen byte `_out`_bylev'' = .
 	}
@@ -212,8 +214,9 @@ if "`_itc_trim_extent'" == "" {
 	if `r(N)'>0 di in gr "Warning: `j' has `r(N)' missing value(s)."
 
 	qui count if `j'==0
-	if `r(N)'>0 & "`nozero'" == "" di in gr "Warning: `j' has `r(N)' zero values. Used in calculations."
-	else if (`r(N)'>0 & "`nozero'" != "") {
+	loc AreThereZeroValues `r(N)'
+	if `r(N)'>0 & "`zero'" == "" di in gr "Warning: `j' has `r(N)' zero values. Used in calculations."
+	else if (`r(N)'>0 & "`zero'" != "") {
 		di in gr "Warning: `j' has `r(N)' zero values. NOT used in calculations."
 		*** Update touse variable to discard zero values
 		tempvar touseup
@@ -392,38 +395,62 @@ if "`_itc_trim_extent'" == "" {
 
 	if "`bestnormalize'"!="" | "`normalize'"!="none" {
 		if `AreThereNegValues' > 0 {
-			if "`normalize'"!="yj" {
+			if "`bestnormalize'"!="" {
+				local bestnormalize
 				local normalize "yj"
-				if "`bestnormalize'"!="" local bestnormalize
 				noi di in gr "Warning: Yeo and Johnson (2000) is the only available transformation since `j' has negative value(s)"
+			}
+			else {
+				if "`normalize'"!="yj" {
+					local normalize "yj"
+					noi di in gr "Warning: Yeo and Johnson (2000) is the only available transformation since `j' has negative value(s)"
+				}
+			}
+		}
+		else {
+			if `AreThereZeroValues' > 0 {
+
+				if "`bestnormalize'"!="" {
+					local atransf "yj asinh sqrt"
+					noi di in gr "Warning - the best normalization will be selected among: yj, asinh and sqrt"
+				}
+				else {
+					if !inlist("`normalize'","asinh", "yj", "sqrt") {
+						noi di in gr "Warning: normalize(`normalize') cannot be used since `j' has negative value(s). normalize(yj) has been imposed"
+						local normalize "yj"
+					}
+				}
 			}
 		}
 	}
 
-	if "`normalize'"!="none" {
-		tempvar jj jjj
-		cap clonevar `jj'=`j'
-		noi _out_normalize `jj' if `touse', transformation(`normalize') outputvar(`jjj')
-
-		if "`r(transf)'"=="none" {
+	if "`bestnormalize'"=="" {
+		if "`normalize'"!="none" {
 			tempvar jj jjj
-			clonevar `jj'=`j'
-			clonevar `jjj'=`j'
-			loc transftitle "none – original, untransformed data"
-		}
-		else {
+			cap clonevar `jj'=`j'
+			noi _out_normalize `jj' if `touse', transformation(`normalize') outputvar(`jjj')
+
 			markout `touse' `jjj'
 			loc todrop_and_rename 1
 			loc transf "`r(transf)'"
 			loc transftitle "`r(transftitle)'"
 			// This is important to get into the structure _od the normalized variable
 			noi m _od = _out_getdata("`jjj'", "`wvar'", "`weight_type'", "`touse'")
+	 	}
+		else if "`normalize'"=="none" {
+			tempvar jj jjj
+			clonevar `jj'=`j'
+			clonevar `jjj'=`j'
+			loc transftitle "none"
 		}
- 	}
+	}
+	else {
 
-	if "`bestnormalize'"!="" {
+		if "`atransf'" == "" {
+			local atransf "ln bcox asinh sqrt"
+			noi di in gr "Warning - the best normalization will be selected among: ln, bcox, asinh and sqrt"
+		}
 
-		local atransf "ln bcox asinh sqrt"
 		noi di in gr "Finding best normalization ..."
 		m _P_d_dfs = J(0,1,.)
 		m _Transf = J(0,1,"")
@@ -770,8 +797,8 @@ else {
 	if `r(N)'>0 di in gr "Warning: `j' has `r(N)' missing value(s)."
 
 	qui count if `j'==0
-	if `r(N)'>0 & "`nozero'" == "" di in gr "Warning: `j' has `r(N)' zero values. Used in calculations."
-	else if (`r(N)'>0 & "`nozero'" != "") {
+	if `r(N)'>0 & "`zero'" == "" di in gr "Warning: `j' has `r(N)' zero values. Used in calculations."
+	else if (`r(N)'>0 & "`zero'" != "") {
 		di in gr "Warning: `j' has `r(N)' zero values. NOT used in calculations."
 		*** Update touse variable to discard zero values
 		tempvar touseup
@@ -1073,7 +1100,7 @@ program define _out_normalize, rclass
 
 	tempname lambda diff
 
-	ParseNorm normalize : `"`transformation'"'
+	local normalize "`transformation'"
 
 	if "`normalize'" == "bcox" {
 		cap boxcox `varlist' if `touse'
@@ -1154,13 +1181,13 @@ program define ParseNorm
 	args retmac colon norm
 
 	local 0 ", `norm'"
-	syntax [, LOG LOG10 LN YJ BCox ASinh Sqrt * ]
+	syntax [, LOG LOG10 LN YJ BCox ASinh Sqrt NONE * ]
 
 	if `"`options'"' != "" {
 		di as error "Specified normalization method is not allowed"
 		exit 198
 	}
-	local wc : word count `log' `log10' `ln' `yj' `bcox' `asinh' `sqrt'
+	local wc : word count `log' `log10' `ln' `yj' `bcox' `asinh' `sqrt' `none'
 
 	if `wc' > 1 {
 		di as error "normalize() invalid, only " /*
@@ -1180,10 +1207,10 @@ program define ParseNorm
 		if "`yj'" == "yj" c_local `retmac' "yj"
 		if "`bcox'" == "bcox" c_local `retmac' "bcox"
 		if "`sqrt'" == "sqrt" c_local `retmac' "sqrt"
+		if "`none'" == "none" c_local `retmac' "none"
 	}
 
 end
-
 
 /* ----------------------------------------------------------------- */
 
