@@ -69,7 +69,7 @@
 Users may exploit {help svyset} to specify the survey design of the data before using {cmd:outdetect}.
 
 {pstd}
-By default, {cmd:outdetect} creates a new variable, {it:_out}, containing numeric codes that flag outliers of {help varname}: 0 for observations that are not outliers, 1 for bottom outliers (small values), 2 for top 
+By default, {cmd:outdetect} creates a new variable, {it:_out}, containing numeric codes that flag outliers of {help varname}: 0 for observations that are not outliers, 1 for bottom outliers (small values), 2 for top
 outliers (large values).
 
 {pstd}
@@ -245,7 +245,7 @@ The ITC reports the value of the statistic of choice, as a function of how many 
 {synoptset 20 tabbed}{...}
 {synopthdr: {it: itc_options}}
 {synoptline}
-{synopt :{opt #}}indicates the maximum of the horizontal axis. Default is 10
+{synopt :{opt #}}indicates the maximum of the horizontal axis. Default is 10{p_end}
 {synopt :{opt absolute}}specifies that the horizontal axis report the number of trimmed observations as is, rather than as a percentage of the total number of observations, which is the default{p_end}
 {synopt :{opt gi:ni}}Gini index (default){p_end}
 {synopt :{opt m:ean}}sample mean{p_end}
@@ -326,7 +326,7 @@ The ITC reports the value of the statistic of choice, as a function of how many 
 
 {marker MV2021}{...}
 {phang}
-Belotti, F., Mancini, G., and Vecchi, G. 2021. {it:Poverty and inequality with dirty data: outlier detection for welfare analysts}. Mimeo.
+Belotti, F., Mancini, G., and Vecchi, G. 2021. {it:Outlier Detection for Welfare Analysts using Stata}. Mimeo.
 
 {phang}
 Box, G. E., and Cox, D. R. 1964. {it:An analysis of transformations}. Journal of the Royal Statistical Society: Series B (Methodological), 26(2), 211-243.
@@ -341,7 +341,7 @@ Rousseeuw, P. J., and Croux, C. 1993. {it:Alternatives to the median absolute de
 Snedecor, G. W., & Cochran, W. G. 1989. {it:Statistical methods}. Ames: Iowa State Univ. Press, Iowa.
 
 {phang}
-Yeo, I. and Johnson, R.A. 2000. {it:A new family of power transformations to improve normality or symmetry}. Biometrika, 87, 954-959. 
+Yeo, I. and Johnson, R.A. 2000. {it:A new family of power transformations to improve normality or symmetry}. Biometrika, 87, 954-959.
 {p_end}
 
 {marker contact}{...}
