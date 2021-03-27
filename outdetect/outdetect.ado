@@ -1,6 +1,6 @@
 
 ** Author: Federico Belotti
-*! version 3.1.0 - 13mar2021
+*! version 3.1.1 - 27mar2021
 *! See below for versioning
 
 capture program drop outdetect
@@ -1277,3 +1277,4 @@ exit
 ** version 3.0.4 - 17jan2021 - Added option "reweight" to create the post-detection adjusted weight variable
 ** version 3.0.4 - 17jan2021 - Added warning foir "missing" weight variable
 ** version 3.1.0 - 13mar2021 - Added bestnormalize option
+** version 3.1.1 - 27mar2021 - Bug fixes and certifications checks  
