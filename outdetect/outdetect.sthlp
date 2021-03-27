@@ -28,9 +28,10 @@
 {synopthdr:options}
 {synoptline}
 {syntab:Main}
-{synopt :{cmdab:norm:alize(}{it:{help outdetect##normtype:normtype}})}specify the transformation for normalizing {help varname}; default is Yeo and Johnson (2000){p_end}
+{synopt :{cmdab:norm:alize(}{it:{help outdetect##normtype:normtype}})}specify the transformation for normalizing {help varname}; default is {help outdetect##MV2021:Yeo and Johnson (2000)}{p_end}
 {synopt :{cmdab:bestnorm:alize}}use the best fitting transformation for normalizing {help varname}{p_end}
-{synopt :{cmdab:zscore(}{it:{help outdetect##stat1:stat1}} {it:{help outdetect##stat2:stat2}})}define the {it:z}-score of the normalized variable; default is stat1 = median, stat2 = Q-statistic (Rousseeuw and Croux, 1993){p_end}
+{synopt :{cmdab:zscore(}{it:{help outdetect##stat1:stat1}} {it:{help outdetect##stat2:stat2}})}define the {it:z}-score of the normalized variable; default is {it:{help outdetect##stat1:stat1}} = median,
+{it:{help outdetect##stat2:stat2}} = Q-statistic {help outdetect##MV2021:(Rousseeuw and Croux, 1993)}{p_end}
 {synopt :{opt alpha(#)}}specify the threshold of the outlier detection region; default is 3{p_end}
 {synopt :{opt out:liers(bottom|top|both)}}specify whether outliers are to be flagged at the bottom, top, or on both sides of the distribution of {help varname}{p_end}
 {synopt :{opt non:egative}}exclude negative values of {help varname} from all calculations{p_end}
@@ -76,8 +77,7 @@ outliers (large values).
 The output of {cmd:outdetect} reports "Raw" statistics (computed using {help varname}), as well as "Trimmed" statistics (computed using just those observations of {help varname} that are not flagged as outliers).
 
 {pstd}
-The procedure by which outliers are detected is described in Belotti et
-al. (2021), and involves two steps.
+The procedure by which outliers are detected is described in {help outdetect##MV2021:Belotti et al. (2021)}, and involves two steps.
 First, the distribution of the target
 variable ({help varname}) is transformed to approach a standard normal distribution.
 To do so, {help varname} is normalized (a transformation is applied so that its distribution approaches a Normal), then standardized (a {it:z}-score of the transformed variable is computed).
@@ -126,13 +126,13 @@ z < -alpha (bottom outlier).{p_end}
 
 {marker normtype}{...}
 {phang2}
-{cmd:normalize(yj)} applies Yeo and Johnson (2000) (default);
+{cmd:normalize(yj)} applies {help outdetect##MV2021:Yeo and Johnson (2000)} (default);
 
 {phang2}
-{cmd:normalize(asinh)} applies the inverse hyperbolic sine (Friedline et al. 2014).
+{cmd:normalize(asinh)} applies the inverse hyperbolic sine {help outdetect##MV2021:(Friedline et al. 2014)}.
 
 {phang2}
-{cmd:normalize(bcox)} applies the Box-Cox transform (Box and Cox 1964);
+{cmd:normalize(bcox)} applies the Box-Cox transform {help outdetect##MV2021:(Box and Cox 1964)};
 
 {phang2}
 {cmd:normalize(ln)} applies the natural logarithm, i.e. ln(x);
@@ -150,7 +150,9 @@ z < -alpha (bottom outlier).{p_end}
 {cmd:normalize(none)} applies no transformation ({help varname} used as is).
 
 {phang}
-{opt bestnormalize} selects the best transformation according to the value of the Pearson P statistic divided by its degrees of freedom (df) (Snedecor and Cochran 1989). This ratio converges to 1 when the data approaches a Gaussian distribution. Therefore, the Pearson/df ratio can be interpreted as a measure of how close a distribution is to normality, and used to rank transformations according to how successful they are in normalizing the data. When natural logarithm and inverse hyperbolic sine transformations show the same ratio, the former is selected.
+{opt bestnormalize} selects the best transformation according to the value of the Pearson P statistic divided by its degrees of freedom (df) {help outdetect##MV2021:(Snedecor and Cochran, 1989)}.
+This ratio converges to 1 when the data approaches a Gaussian distribution.
+Therefore, the Pearson/df ratio can be interpreted as a measure of how close a distribution is to normality, and used to rank transformations according to how successful they are in normalizing the data.
 When this option is specified, {cmd:outdetect} stores the Pearson/df ratio corresponding to the best normalizing transformation.
 
 {phang}
@@ -174,9 +176,9 @@ When this option is specified, {cmd:outdetect} stores the Pearson/df ratio corre
 {p 12}
 {it: iqr}, interquartile range;{p_end}
 {p 12}
-{it: s}, S-statistic (Rousseeuw and Croux, 1993);{p_end}
+{it: s}, S-statistic {help outdetect##MV2021:(Rousseeuw and Croux, 1993)};{p_end}
 {p 12}
-{it: q}, Q-statistic (Rousseeuw and Croux, 1993) (default);{p_end}
+{it: q}, Q-statistic {help outdetect##MV2021:(Rousseeuw and Croux, 1993)} (default);{p_end}
 
 {phang}
 {opt alpha(#)} specifies the threshold of the outlier detection region, which is defined with reference to the distribution of the {it:z}-score. The default is 3, but conventional values may range between 2 and 4, depending on  the context.
@@ -231,13 +233,14 @@ namely the poverty headcount (H), poverty gap (PG), and poverty gap squared (PG2
 {dlgtab:Graphics}
 
 {phang}
-{opt graph}({it:type} [, replace]) produces diagnostic plots where {it:type} can be chosen among the following:
+{marker gtype}{...}
+{opt graph}({it:gtype} [, replace]) produces diagnostic plots where {it:gtype} can be chosen among the following:
 
 {phang2}
 {cmd:qqplot} plots the quantiles of the {it:z}-score against the quantiles of the standard Normal distribution (Quantile-Quantile plot). It is used to assess the success of the normalization of {help varname}.
 
 {phang2}
-{opt itc}([{it:#} : {help outdetect##itc_options:{it:itc_options}}]) produces the Incremental Trimming Curve (ITC) for a statistic of interest {help outdetect##MV2021:(Mancini and Vecchi, 2021)}.
+{opt itc}([{it:#} :] {help outdetect##itc_options:{it:itc_options}}) produces the Incremental Trimming Curve (ITC) for a statistic of interest {help outdetect##MV2021:(Mancini and Vecchi, 2021)}.
 The ITC reports the value of the statistic of choice, as a function of how many extreme values are discarded (trimmed) from the distribution of {help varname}. It is used to assess the sensitivity of the statistic of interest to the choice of the outlier detection threshold. By default, the horizontal axis reports the number of trimmed observations as a percentage of all non-missing values of {help varname}, but the number can be reported in absolute terms, too.
 
 
@@ -245,14 +248,14 @@ The ITC reports the value of the statistic of choice, as a function of how many 
 {synoptset 20 tabbed}{...}
 {synopthdr: {it: itc_options}}
 {synoptline}
-{synopt :{opt #}}indicates the maximum of the horizontal axis. Default is 10{p_end}
-{synopt :{opt absolute}}specifies that the horizontal axis report the number of trimmed observations as is, rather than as a percentage of the total number of observations, which is the default{p_end}
+{synopt :{opt #}}specifies the percentage of trimmed observations. Default is 10%{p_end}
+{synopt :{opt abs:olute}}treats {opt #} as the number of trimmed observations{p_end}
 {synopt :{opt gi:ni}}Gini index (default){p_end}
 {synopt :{opt m:ean}}sample mean{p_end}
 {synopt :{opt h}}poverty headcount rate{p_end}
 {synopt :{opt pg}}poverty gap{p_end}
 {synopt :{opt pg2}}poverty gap squared{p_end}
-{synopt :{cmd:pline({help varname} | #)}}specifies the poverty line. It must be specified when {it:h}, {it:pg} or {it:pg2} are specified{p_end}
+{synopt :{cmd:pline({help varname} | #)}}specifies the poverty line. It must be specified when one of {cmd:h}, {cmd:pg} or {cmd:pg2} is specified. If only {cmd:pline({help varname} | #)} is specified, {cmd:h} is forced{p_end}
 {synoptline}
 
 
@@ -277,19 +280,19 @@ The ITC reports the value of the statistic of choice, as a function of how many 
 {cmd:. outdetect pce, pline(215000)}
 {p_end}
 {phang2}
-{cmd:. outdetect pce, norm(log)}
+{cmd:. outdetect pce, norm(asinh)}
 {p_end}
 {phang2}
-{cmd:. outdetect pce, norm(yj) zscore(median s) alpha(2.5)}
+{cmd:. outdetect pce, zscore(median s) alpha(2.5)}
 {p_end}
 {phang2}
-{cmd:. outdetect pce, graph(itc(10))}
+{cmd:. outdetect pce, graph(itc(15))}
 {p_end}
 {phang2}
-{cmd:. outdetect pce, graph(itc(10: abs mean))}
+{cmd:. outdetect pce, graph(itc(abs mean))}
 {p_end}
 {phang2}{cmd:. generate povertyline = 215000}{p_end}
-{phang2}{cmd:. outdetect pce, graph(itc(10: pg2 pline(povertyline)))}{p_end}
+{phang2}{cmd:. outdetect pce, graph(itc(5: abs pg2 pline(povertyline)))}{p_end}
 {phang2}
 {cmd:. outdetect pce, graph(qqplot)}
 {p_end}
@@ -338,7 +341,7 @@ Friedline, T., Masa, R. D., and Chowa, G. A. 2015. {it:Transforming wealth: Usin
 Rousseeuw, P. J., and Croux, C. 1993. {it:Alternatives to the median absolute deviation}. Journal of the American Statistical association, 88(424), 1273-1283.
 
 {phang}
-Snedecor, G. W., & Cochran, W. G. 1989. {it:Statistical methods}. Ames: Iowa State Univ. Press, Iowa.
+Snedecor, G. W., Cochran, W. G. 1989. {it:Statistical methods}. Ames: Iowa State Univ. Press, Iowa.
 
 {phang}
 Yeo, I. and Johnson, R.A. 2000. {it:A new family of power transformations to improve normality or symmetry}. Biometrika, 87, 954-959.

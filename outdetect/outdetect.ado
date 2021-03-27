@@ -10,7 +10,7 @@ syntax varlist(max=1) [if] [in] [pw aw/] [, ///
 							REWeight ///
 							noZero noNegative ///
 							REPLACE noGenerate ///
-						    NORMalize(string) BESTNORMalize ///
+						    NORMalize(string) BESTNORMalize SEEBEST ///
 							OUTliers(string) Graph(string) EXCEL(string)  ///
 						    ZSCORE(string) PLINE(string) ///
 						    noPERCent Alpha(real 3) MADFactor(real 1.4826022) SFormat(string) IFormat(string) ///
@@ -19,7 +19,6 @@ syntax varlist(max=1) [if] [in] [pw aw/] [, ///
 
 
 
-di ""
 
 loc cutoff `alpha'
 if "`timer'"!="" timer clear
@@ -393,32 +392,33 @@ if "`_itc_trim_extent'" == "" {
 
 	loc todrop_and_rename 0
 
+	if "`zero'"!="" loc AreThereZeroValues 0
+	if "`negative'"!="" loc AreThereNegValues 0
+
 	if "`bestnormalize'"!="" | "`normalize'"!="none" {
 		if `AreThereNegValues' > 0 {
 			if "`bestnormalize'"!="" {
-				local bestnormalize
-				local normalize "yj"
-				noi di in gr "Warning: Yeo and Johnson (2000) is the only available transformation since `j' has negative value(s)"
+				loc atransf "log asinh yj"
+				noi di in gr "The best normalization will be selected among: log, asinh and yj"
 			}
 			else {
-				if "`normalize'"!="yj" {
-					local normalize "yj"
-					noi di in gr "Warning: Yeo and Johnson (2000) is the only available transformation since `j' has negative value(s)"
+				if inlist("`normalize'", "log", "asinh", "yj")==0 {
+					noi di as error "normalize(`normalize') cannot be used with negative value(s). Possible choices are: log, asinh, yj"
+					exit 198
 				}
 			}
 		}
-		else {
-			if `AreThereZeroValues' > 0 {
-
-				if "`bestnormalize'"!="" {
-					local atransf "yj asinh sqrt"
-					noi di in gr "Warning - the best normalization will be selected among: yj, asinh and sqrt"
+		if `AreThereZeroValues' > 0 {
+			if "`bestnormalize'"!="" {
+				if `AreThereNegValues' == 0 {
+					local atransf "log asinh sqrt yj"
+					noi di in gr "The best normalization will be selected among: log, asinh, yj and sqrt"
 				}
-				else {
-					if !inlist("`normalize'","asinh", "yj", "sqrt") {
-						noi di in gr "Warning: normalize(`normalize') cannot be used since `j' has negative value(s). normalize(yj) has been imposed"
-						local normalize "yj"
-					}
+			}
+			else {
+				if inlist("`normalize'", "log", "asinh", "yj", "sqrt")==0 {
+					noi di as error "normalize(`normalize') cannot be used with zero value(s). Possible choices are: log, asinh, sqrt, yj"
+					exit 198
 				}
 			}
 		}
@@ -447,8 +447,8 @@ if "`_itc_trim_extent'" == "" {
 	else {
 
 		if "`atransf'" == "" {
-			local atransf "ln bcox asinh sqrt"
-			noi di in gr "Warning - the best normalization will be selected among: ln, bcox, asinh and sqrt"
+			local atransf "ln bcox sqrt"
+			noi di in gr "The best normalization will be selected among: ln, bcox and sqrt"
 		}
 
 		noi di in gr "Finding best normalization ..."
@@ -459,9 +459,14 @@ if "`_itc_trim_extent'" == "" {
 			tempvar jj jjj_`tr'
 			cap clonevar `jj'=`j'
 			noi _out_normalize `jj' if `touse', transformation(`tr') outputvar(`jjj_`tr'')
-			m _Transf_ti = _Transf_ti \ "`r(transftitle)'"
+			loc see_transftitle "`r(transftitle)'"
+			m _Transf_ti = _Transf_ti \ "`see_transftitle'"
 			putmata `jjj_`tr'' if `touse', replace
 			noi m _out_pearson_test(`jjj_`tr'')
+			if "`seebest'" != "" {
+				loc _P_d_df = _P_d_df
+				noi di in gr "`see_transftitle'" in gr " = " in yel %4.3f `_P_d_df'
+			}
 			m _P_d_dfs = _P_d_dfs \ st_numscalar("_P_d_df")
 			m _Transf = _Transf \ "`tr'"
 		}
@@ -937,10 +942,17 @@ end
 /* ----------------------------------------------------------------- */
 
 program define ParseG, sclass
-	syntax [, ITC(string) QQplot * ]
+	syntax [, ITCccc ITC(string) QQplot * ]
+
+	if "`itcccc'"!="" local itc "10:gini"
 
 	if "`itc'"!="" {
 		gettoken itc itc_options : itc, parse(":")
+		cap confirm n `itc'
+		if _rc != 0 {
+			if "`itc_options'"=="" & "`itc'"!="" loc itc_options "`itc'"
+			loc itc 10
+		}
 		if "`itc_options'"!="" local itc_options = subinstr("`itc_options'", ":", "", .)
 		ParseITC, `itc_options'
 	}
@@ -994,11 +1006,31 @@ program define ParseITC, sclass
 				sret loc pline `pline'
 			}
 		}
+		else {
+			di as error "option pline() required"
+			exit 198
+		}
 	}
 	else {
 		if "`pline'"!="" {
-			di as error "pline() invalid. Only when stat is h, pg, pg2"
-			exit 198
+			cap confirm v `pline', exact
+			if _rc!=0 {
+				sret loc plinevar 0
+				loc note_pline: di %12.0gc `pline'
+				sret loc _table_note "Poverty line: `note_pline'"
+				sret loc pline `pline'
+			}
+			else {
+				sret loc plinevar 1
+				qui sum `pline'
+				if `r(sd)' == 0 {
+					loc note_pline: di %12.0gc `r(mean)'
+					sret loc _table_note "Poverty line: `r(mean)' (`pline')"
+				}
+				else sret loc _table_note "Poverty line: `pline'"
+				sret loc pline `pline'
+			}
+			loc stat "h"
 		}
 	}
 
@@ -1103,7 +1135,7 @@ program define _out_normalize, rclass
 	local normalize "`transformation'"
 
 	if "`normalize'" == "bcox" {
-		cap boxcox `varlist' if `touse'
+		cap boxcox `varlist' if `touse', iter(500)
 		if _rc == 0 {
 			scalar `lambda' = _b[theta:_cons]
 			scalar `diff' = reldif(`lambda', 0.0)
@@ -1122,7 +1154,7 @@ program define _out_normalize, rclass
 	}
 	else if "`normalize'" == "yj" {
 		cap _out_yj_lambda `varlist' if `touse'
-		if _rc == 0 {
+		if _rc == 0 & _converged_ == 1{
 			scalar `lambda' = `r(_out_lambda)'
 			qui m: _out_yj_trans("`varlist'", st_numscalar("`lambda'"),"`touse'","`outputvar'")
 			local _lambda_ = `lambda'
@@ -1222,6 +1254,7 @@ program define _out_yj_lambda, rclass
 
 	m: st_numscalar("_out_lambda_", _out_yj_lambda("`varlist'", "`touse'"))
 
+	return scalar _converged_ = _converged_
 	return scalar _out_lambda = _out_lambda_
 end
 
