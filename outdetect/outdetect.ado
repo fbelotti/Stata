@@ -976,11 +976,11 @@ else {
 ********* DESTRUCTOR *********
 ******************************
 
-loc _mat_ "__ind_pre`_bylev' __ind_trim`_bylev' __ind`_bylev' _out_detected`_bylev' _vv _aa _itc_table"
+loc _mat_ "__ind_pre`_bylev' __ind_trim`_bylev' __ind`_bylev' _out_detected`_bylev' _vv _aa _itc_table __ind_ss`_bylev' __ind_s`_bylev' __ind_trim_ss`_bylev' __ind_trim_s`_bylev' __ind_pre_ss`_bylev' __ind_pre_s`_bylev'"
 foreach _m of local _mat_ {
 	cap matrix drop `_m'
 }
-loc _sca_ "_out_mu _out_p50 _out_sd _out_cv _out_iqr _out_gini _out_mld0 _out_mld1 _out_mld2 _out_atk125 _out_atk1 _out_atk2 _out_dr _out_hc _out_pg _out_pg2 _out_pov _out_atk _out_mld _out_kurt _out_skew"
+loc _sca_ "_out_mu _out_p50 _out_sd _out_cv _out_iqr _out_gini _out_mld0 _out_mld1 _out_mld2 _out_atk125 _out_atk1 _out_atk2 _out_dr _out_hc _out_pg _out_pg2 _out_pov _out_atk _out_mld _out_kurt _out_skew _best_p_def _P_d_df _P_nclasses _P_df _P _q_value_ _s_value_ _kurt_ _skew_ _sd_value_ _meth_value_ _mad_value_ _out_lambda_ _converged_"
 foreach _s of local _sca_ {
 	cap scalar drop `_s'
 }
