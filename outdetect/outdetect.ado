@@ -1,6 +1,6 @@
 
 ** Author: Federico Belotti
-*! version 3.1.1 - 27mar2021
+*! version 3.1.2 - 4apr2021
 *! See below for versioning
 
 capture program drop outdetect
@@ -10,7 +10,7 @@ syntax varlist(max=1) [if] [in] [pw aw/] [, ///
 							REWeight ///
 							noZero noNegative ///
 							REPLACE noGenerate ///
-						    NORMalize(string) BESTNORMalize SEEBEST ///
+						    NORMalize(string) BESTnormalize SEEBEST ///
 							OUTliers(string) Graph(string) EXCEL(string)  ///
 						    ZSCORE(string) PLINE(string) ///
 						    noPERCent Alpha(real 3) MADFactor(real 1.4826022) SFormat(string) IFormat(string) ///
@@ -706,8 +706,8 @@ if "`_itc_trim_extent'" == "" {
 	di ""
 	di in smcl "{hline 64}"
 	matlist __ind_s`_bylev', format(`sfmt') twidth(13) border(b) aligncolnames(center) /*row(Statistics)*/ tind(1) title("{ul: Statistics for raw and trimmed `j'}:") noblank
-
 	*di _col(15) in smcl "{c |}" /* Here we need 13 blanks */
+
 	matlist __ind_ss`_bylev', format(`ifmt') twidth(13) border(b) nam(r) noblank
 	if "`_table_note'"!="" di as text "`_table_note'"
 
@@ -746,23 +746,26 @@ if "`_itc_trim_extent'" == "" {
 	return scalar N_trimmed = r(N)
 
 	if "`_qqplot'" != "" {
-		if "`gph_options'"=="" loc gph_options ","
+		if "`gph_options'"=="" {
+			loc gph_options ", yti("Normalized `j'") aspectratio(1) graphregion(fcolor(white)) ylab(, grid angle(360) labsi(*.8) glwidth(vthin)) ms(oh) mcol(red*1.25) rlopts(lc(black))  ytit(, si(*.8)) xlab(, grid labsi(*.8)) xtit(, si(*.8))"
+		}
 		qui swilk `jjj' if `touse'
 		loc _test_swilk `r(p)'
 		qui sfrancia `jjj' if `touse'
 		loc _test_sfrancia `r(p)'
 		qui sktest `jjj' if `touse'
 		loc _test_sfrancia `r(P_chi2)'
-		qnorm `jjj' if `touse' `gph_options' scheme(`gscheme') ///
-		note(" " "Normality tests:" "Shapiro-Wilk (p-value): `: di %4.3f `_test_swilk''" ///
-			 "Shapiro-Francia (p-value): `: di %4.3f `_test_sfrancia''" ///
-			 "D'Agostino, Balanger, and D'Agostino (p-value): `: di %4.3f `_test_sfrancia''")
+		qnorm `jjj' if `touse' `gph_options' ///
+		note(" " "Normality tests (p-value):" "Shapiro-Wilk: `: di %4.3f `_test_swilk''" ///
+			 "Shapiro-Francia: `: di %4.3f `_test_sfrancia''" ///
+			 "D'Agostino, Balanger, and D'Agostino: `: di %4.3f `_test_sfrancia''")
 	}
 
 } /* close trimming() */
 else {
 
-
+	tempvar touse_raw
+	gen `touse_raw' = (`touse'==1)
 
 	/* Why is this here ? muted
 	// Check if MAD is 0. This is crucial.
@@ -877,27 +880,59 @@ else {
 		//
 		if `_itc_trim_extent'<3 loc _gxlab "1(1)`_itc_trim_extent', glwidth(vthin) labsi(*.8)"
 		else loc _gxlab ", glwidth(vthin) labsi(*.8)"
+		loc _itc_tab_rowtitle " Discarded obs"
 	}
 	else {
-		label var `_psample_t' "Discarded observations (% sample)"
+		label var `_psample_t' "Discarded observations (%)"
 		loc _gxlab ", grid glwidth(vthin) labsi(*.8)"
+		loc _itc_tab_rowtitle " Discarded obs (%)"
 	}
 
 	if "`_itc_stat'" != "mean" local _mult100 "100*"
 	replace `_top_extremes' = `_mult100' `_top_extremes'
-	label var `_top_extremes' "Large outliers"
+	label var `_top_extremes' "Top outliers"
 	replace `_bottom_extremes' = `_mult100' `_bottom_extremes'
-	label var `_bottom_extremes' "Small outliers"
+	label var `_bottom_extremes' "Bottom outliers"
 
 
 
 	} /* close qui */
 
+	// Display table
+	tempname do_select _top_extremes_tab _bottom_extremes_tab _itc_table round_perc itcdiff min_itcdiff
+
+	cap gen `round_perc' = round(`_psample_t') if `_psample_t'!=.
+	cap gen double `itcdiff' = abs(`_psample_t' - `round_perc') if `_psample_t'!=.
+	cap bys `round_perc': egen double `min_itcdiff' = min(`itcdiff') if `_psample_t'!=.
+	cap gen `do_select' = (`min_itcdiff' == `itcdiff') if `_psample_t'!=.
+
+	mkmat `_top_extremes' if `do_select'==1, mat(`_top_extremes_tab')
+	mkmat `_bottom_extremes' if `do_select'==1, mat(`_bottom_extremes_tab')
+
+	mat _itc_table = `_bottom_extremes_tab', `_top_extremes_tab'
+	mat colnames _itc_table = "Bottom" "Top"
+	forv rr = 0/`_itc_trim_extent' {
+		loc _ict_table_rowlab "`_ict_table_rowlab' `rr'"
+	}
+	mat rownames _itc_table = `_ict_table_rowlab'
+	mat coleq _itc_table = "`_itc_stat'" "`_itc_stat'"
+
+	// Get and adjust the table's format
+	if "`_itc_stat'"!="mean" {
+		gettoken sfmt_int sfmt_dec: sfmt, parse(".")
+		if regexm("`sfmt_dec'", "2")==1 loc sfmt %6`sfmt_dec'
+		else if regexm("`sfmt_dec'", "3")==1 loc sfmt %7`sfmt_dec'
+		else if regexm("`sfmt_dec'", "4")==1 loc sfmt %8`sfmt_dec'
+		*di "`sfmt'"
+	}
+	di ""
+	matlist _itc_table, format(`sfmt') twidth(18) border(b) aligncolnames(center) /*row(Statistics)*/ tind(1) title("{ul: Incremental trimming curve for `j'}:") noblank  row("`_itc_tab_rowtitle'") showcoleq(c)
+
 	if "`gph_options'" == "" {
 
 		if "`_itc_stat'"=="gini" loc _ytit "Gini coefficient (%)"
 		if "`_itc_stat'"=="mean" loc _ytit "Mean"
-		if "`_itc_stat'"=="h" loc _ytit "Headcount rate (%)"
+		if "`_itc_stat'"=="h" loc _ytit "Poverty headcount ratio (%)"
 		if "`_itc_stat'"=="pg" loc _ytit "Poverty gap index (%)"
 		if "`_itc_stat'"=="pg2" loc _ytit "Poverty gap{sup:2} index (%)"
 
@@ -913,7 +948,26 @@ else {
 		twoway line `_top_extremes' `_bottom_extremes' `_psample_t' `gph_options'
 	}
 
+	***** Here excel() option in action
+	*** todo: allow excel() when by is used. Multiple sheets?
+	if "`excel'"!="" {
+		gettoken savename replace: excel, parse(",")
+		local savename = subinstr("`savename'", " ", "", .)
+		local replace = subinstr("`replace'", ",", "", .)
+		local replace = strtrim("`replace'")
+		m _out_excel("`savename'", "`replace'", "yes")
+	}
 
+	******************************
+	******** POST RESULTS ********
+	******************************
+
+	return local cmd "outdetect"
+	*return mat b`_bylev' = __ind`_bylev'
+	return mat out = _itc_table
+
+	qui count if `touse_raw'==1
+	return scalar N_raw = r(N)
 
 }
 
@@ -922,7 +976,7 @@ else {
 ********* DESTRUCTOR *********
 ******************************
 
-loc _mat_ "__ind_pre`_bylev' __ind_trim`_bylev' __ind`_bylev' _out_detected`_bylev' _vv _aa"
+loc _mat_ "__ind_pre`_bylev' __ind_trim`_bylev' __ind`_bylev' _out_detected`_bylev' _vv _aa _itc_table"
 foreach _m of local _mat_ {
 	cap matrix drop `_m'
 }
@@ -1277,4 +1331,5 @@ exit
 ** version 3.0.4 - 17jan2021 - Added option "reweight" to create the post-detection adjusted weight variable
 ** version 3.0.4 - 17jan2021 - Added warning foir "missing" weight variable
 ** version 3.1.0 - 13mar2021 - Added bestnormalize option
-** version 3.1.1 - 27mar2021 - Bug fixes and certifications checks  
+** version 3.1.1 - 27mar2021 - Bug fixes and certifications checks
+** version 3.1.2 - 4apr2021 - excel() now works also after graph(itc) and the latter produces a table with the results reported in the plot

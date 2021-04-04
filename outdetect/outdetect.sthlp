@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 1.0.1  17jan2021}{...}
+{* *! version 1.1.1  4apr2021}{...}
 {viewerjumpto "Syntax" "outdetect##syntax"}{...}
 {viewerjumpto "Description" "outdetect##description"}{...}
 {viewerjumpto "Options" "outdetect##options"}{...}
@@ -29,7 +29,7 @@
 {synoptline}
 {syntab:Main}
 {synopt :{cmdab:norm:alize(}{it:{help outdetect##normtype:normtype}})}specify the transformation for normalizing {help varname}; default is {help outdetect##MV2021:Yeo and Johnson (2000)}{p_end}
-{synopt :{cmdab:bestnorm:alize}}use the best fitting transformation for normalizing {help varname}{p_end}
+{synopt :{cmdab:best:normalize}}use the best fitting transformation for normalizing {help varname}{p_end}
 {synopt :{cmdab:zscore(}{it:{help outdetect##stat1:stat1}} {it:{help outdetect##stat2:stat2}})}define the {it:z}-score of the normalized variable; default is {it:{help outdetect##stat1:stat1}} = median,
 {it:{help outdetect##stat2:stat2}} = Q-statistic {help outdetect##MV2021:(Rousseeuw and Croux, 1993)}{p_end}
 {synopt :{opt alpha(#)}}specify the threshold of the outlier detection region; default is 3{p_end}
@@ -64,14 +64,20 @@
 {title:Description}
 
 {pstd}
-{cmd:outdetect} identifies and treats extreme values, either "too small" or "too large" observations, in the distribution of {help varname}.
+{cmd:outdetect} identifies extreme values, either "too small" or "too large" observations, in the distribution of {help varname}. We shall call these observations {it:bottom outliers} and {it:top outliers}, respectively
+(small values being at the bottom of the distribution of {help varname}, and large values being at the top).
 
 {pstd}
 Users may exploit {help svyset} to specify the survey design of the data before using {cmd:outdetect}.
+By default, {cmd:outdetect} creates a new variable, {it:_out}, containing numeric codes that flag outliers of {help varname}:
 
-{pstd}
-By default, {cmd:outdetect} creates a new variable, {it:_out}, containing numeric codes that flag outliers of {help varname}: 0 for observations that are not outliers, 1 for bottom outliers (small values), 2 for top
-outliers (large values).
+	Numeric
+	 code	  Description
+	{hline 57}
+	   {cmd:0}	observation is not an outlier
+	   {cmd:1}      observation is a bottom outlier ("too small")
+	   {cmd:2}      observation is a top outlier ("too large")
+	{hline 57}
 
 {pstd}
 The output of {cmd:outdetect} reports "Raw" statistics (computed using {help varname}), as well as "Trimmed" statistics (computed using just those observations of {help varname} that are not flagged as outliers).
@@ -92,27 +98,29 @@ target variable (varname) = v{p_end}
 {pstd}
 normalized variable 	  = x 	= {it:t}(v){p_end}
 
-{p 2}
-where {it:t} is a normalizing transformation
+{pstd}
+where {it:t} is a normalizing transformation.
 {p_end}
 
 {pstd}
 {it:z}-score of x 			  = z 	= (x - {it:stat1})/{it:stat2}{p_end}
 
-{p 2}
-where {it:stat1} is a measure of location and {it:stat2} is a measure of scale{p_end}
+{pstd}
+where {it:stat1} is a measure of location and {it:stat2} is a measure of scale.{p_end}
 
 {pstd}
 alpha					  = 	  conventional threshold{p_end}
 
 {pstd}
-An observation of {it:v} is flagged as an outlier if:{p_end}
-{pstd}
+An observation of {it:v} is flagged as an outlier if:
+{p_end}
+
+{p 4}
 |z| > alpha (both bottom and top outliers), or{p_end}
-{pstd}
-z > alpha (top outlier), or{p_end}
-{pstd}
-z < -alpha (bottom outlier).{p_end}
+{p 5}
+ z  > alpha (top outlier), or{p_end}
+{p 5}
+ z  < -alpha (bottom outlier).{p_end}
 
 
 
@@ -122,7 +130,7 @@ z < -alpha (bottom outlier).{p_end}
 {dlgtab:Main}
 
 {phang}
-{opt normalize(normtype)} specifies the method for transforming {help varname} into a distribution that approaches a Normal distribution. {it:normtype} may be selected among the following transformations:
+{opt norm:alize(normtype)} specifies the method for transforming {help varname} into a distribution that approaches a Normal distribution. {it:normtype} may be selected among the following transformations:
 
 {marker normtype}{...}
 {phang2}
@@ -150,7 +158,7 @@ z < -alpha (bottom outlier).{p_end}
 {cmd:normalize(none)} applies no transformation ({help varname} used as is).
 
 {phang}
-{opt bestnormalize} selects the best transformation according to the value of the Pearson P statistic divided by its degrees of freedom (df) {help outdetect##MV2021:(Snedecor and Cochran, 1989)}.
+{opt best:normalize} selects the best transformation according to the value of the Pearson P statistic divided by its degrees of freedom (df) {help outdetect##MV2021:(Snedecor and Cochran, 1989)}.
 This ratio converges to 1 when the data approaches a Gaussian distribution.
 Therefore, the Pearson/df ratio can be interpreted as a measure of how close a distribution is to normality, and used to rank transformations according to how successful they are in normalizing the data.
 When this option is specified, {cmd:outdetect} stores the Pearson/df ratio corresponding to the best normalizing transformation.
@@ -184,7 +192,7 @@ When this option is specified, {cmd:outdetect} stores the Pearson/df ratio corre
 {opt alpha(#)} specifies the threshold of the outlier detection region, which is defined with reference to the distribution of the {it:z}-score. The default is 3, but conventional values may range between 2 and 4, depending on  the context.
 
 {phang}
-{opt outliers(bottom|top|both)} specifies whether outliers are to be flagged at one or both sides of the distribution of {help varname}.
+{opt out:liers(bottom|top|both)} specifies whether outliers are to be flagged at one or both sides of the distribution of {help varname}:
 
 {p 12}
 {it: bottom}, only flags bottom ("too small") outliers;{p_end}
@@ -194,28 +202,28 @@ When this option is specified, {cmd:outdetect} stores the Pearson/df ratio corre
 {it: both}, flags both bottom and top outliers (default).{p_end}
 
 {phang}
-{opt nonegative} excludes negative values of {help varname} from the detection routine, the computation of summary statistics, and all other calculations.
+{opt non:egative} excludes negative values of {help varname} from the detection routine, the computation of summary statistics, and all other calculations.
 
 {phang}
-{opt nozero} excludes zeros of {help varname} from the detection routine, the computation of summary statistics, and all other calculations.
+{opt noz:ero} excludes zeros of {help varname} from the detection routine, the computation of summary statistics, and all other calculations.
 
 {phang}
-{opt nogenerate} specifies that variable {it:_out} (which flags outliers of {help varname}) not be created.
+{opt nog:enerate} specifies that variable {it:_out} (which flags outliers of {help varname}) not be created.
 
 {phang}
 {opt replace} replaces any existing variable named {it:_out} with the new {it:_out} variable created by issuing {cmd:outdetect}.
 
 {phang}
-{opt reweight} creates a new variable containing the post-detection adjusted weights. The option can only be specified when {help weights} or {help svyset} are used to specify a weight variable.
+{opt rew:eight} creates a new variable containing the post-detection adjusted weights. The option can only be specified when {help weights} or {help svyset} are used to specify a weight variable.
 
 {phang}
-{opt madfactor(#)} specifies the Fisher consistency factor to be applied to the median absolute deviation, if this statistic is selected for the calculation of the z-score. The default is 1.4826.
+{opt madf:actor(#)} specifies the Fisher consistency factor to be applied to the median absolute deviation, if this statistic is selected for the calculation of the z-score. The default is 1.4826.
 
 {phang}
-{opt sfactor(#)} specifies the Fisher consistency factor to be applied to the S-statistic, if this statistic is selected for the calculation of the z-score. The default is 1.1926.
+{opt sf:actor(#)} specifies the Fisher consistency factor to be applied to the S-statistic, if this statistic is selected for the calculation of the z-score. The default is 1.1926.
 
 {phang}
-{opt qfactor(#)} specifies the Fisher consistency factor to be applied to the Q-statistic, if this statistic is selected for the calculation of the z-score. The default is 2.2219.
+{opt qf:actor(#)} specifies the Fisher consistency factor to be applied to the Q-statistic, if this statistic is selected for the calculation of the z-score. The default is 2.2219.
 
 
 {dlgtab:Reporting}
@@ -234,68 +242,82 @@ namely the poverty headcount (H), poverty gap (PG), and poverty gap squared (PG2
 
 {phang}
 {marker gtype}{...}
-{opt graph}({it:gtype} [, replace]) produces diagnostic plots where {it:gtype} can be chosen among the following:
+{opt graph}({it:gtype} [, {it:twoway_options}]) produces diagnostic plots. Any options documented in {help twoway_options} other than {cmd:by()} can be specified. {it:gtype} can be chosen among the following:
 
 {phang2}
-{cmd:qqplot} plots the quantiles of the {it:z}-score against the quantiles of the standard Normal distribution (Quantile-Quantile plot). It is used to assess the success of the normalization of {help varname}.
+{cmd:qqplot} plots the quantiles of the normalized variable against the quantiles of a Normal distribution with the same mean and variance (Quantile-Quantile plot). It uses Stata's {help qnorm}. It can be used to assess the success of the normalization of {help varname}.
 
 {phang2}
 {opt itc}([{it:#} :] {help outdetect##itc_options:{it:itc_options}}) produces the Incremental Trimming Curve (ITC) for a statistic of interest {help outdetect##MV2021:(Mancini and Vecchi, 2021)}.
-The ITC reports the value of the statistic of choice, as a function of how many extreme values are discarded (trimmed) from the distribution of {help varname}. It is used to assess the sensitivity of the statistic of interest to the choice of the outlier detection threshold. By default, the horizontal axis reports the number of trimmed observations as a percentage of all non-missing values of {help varname}, but the number can be reported in absolute terms, too.
+The ITC reports the value of the statistic of choice, as a function of how many extreme values are discarded (trimmed) from the distribution of {help varname}. Weights are adjusted at each iteration. The ITC can be used to assess the sensitivity of the statistic of interest to the choice of the outlier detection threshold. By default, the horizontal axis reports the number of trimmed observations as a percentage of all non-missing values of {help varname}, but the number can be reported in absolute terms, too.
 
 
-{marker itc_options}{...}
 {synoptset 20 tabbed}{...}
-{synopthdr: {it: itc_options}}
+{synopthdr:itc_options}
 {synoptline}
-{synopt :{opt #}}specifies the percentage of trimmed observations. Default is 10%{p_end}
+{synopt :{opt #}}specifies the maximum percentage of trimmed observations. Default is 10%{p_end}
 {synopt :{opt abs:olute}}treats {opt #} as the number of trimmed observations{p_end}
 {synopt :{opt gi:ni}}Gini index (default){p_end}
 {synopt :{opt m:ean}}sample mean{p_end}
-{synopt :{opt h}}poverty headcount rate{p_end}
-{synopt :{opt pg}}poverty gap{p_end}
-{synopt :{opt pg2}}poverty gap squared{p_end}
-{synopt :{cmd:pline({help varname} | #)}}specifies the poverty line. It must be specified when one of {cmd:h}, {cmd:pg} or {cmd:pg2} is specified. If only {cmd:pline({help varname} | #)} is specified, {cmd:h} is forced{p_end}
+{synopt :{opt h}}poverty headcount ratio{p_end}
+{synopt :{opt pg}}poverty gap index{p_end}
+{synopt :{opt pg2}}poverty gap squared index{p_end}
+{synopt :{cmd:pline({help varname} | #)}}specifies the poverty line. It must be specified when {cmd:h}, {cmd:pg}, or {cmd:pg2} are specified. If only {cmd:pline({help varname} | #)} is specified, then {cmd:h} is forced{p_end}
 {synoptline}
-
-
 
 
 {marker examples}{...}
 {title:Examples}
 
-{pstd}Load demo data:{p_end}
-{phang2}
-{cmd:. use https://raw.github.com/fbelotti/Stata/master/dta/outdetect, clear}
-{p_end}
+{pstd}Set up and default use{p_end}
+{synoptline}
 
-{pstd}Run {cmd:outdetect} using {help weights}:{p_end}
-{phang2}{cmd:. outdetect pce [pweight=weight]}{p_end}
+{pstd}Load demo data{p_end}
+{phang2}{it:{stata "use https://raw.github.com/fbelotti/Stata/master/dta/hbs.dta, clear":use hbs.dta, clear}}
 
-{pstd}Setup using {help svyset}:{p_end}
-{phang2}{cmd:. svyset [pweight=weight]}{p_end}
-{phang2}{cmd:. outdetect pce}{p_end}
+{pstd}Run {cmd:outdetect} using {help weights}{p_end}
+{phang2}{it:{stata "outdetect pce [pweight=weight]":outdetect pce [pweight=weight]}}
 
-{phang2}
-{cmd:. outdetect pce, pline(215000)}
-{p_end}
-{phang2}
-{cmd:. outdetect pce, norm(asinh)}
-{p_end}
-{phang2}
-{cmd:. outdetect pce, zscore(median s) alpha(2.5)}
-{p_end}
-{phang2}
-{cmd:. outdetect pce, graph(itc(15))}
-{p_end}
-{phang2}
-{cmd:. outdetect pce, graph(itc(abs mean))}
-{p_end}
-{phang2}{cmd:. generate povertyline = 215000}{p_end}
-{phang2}{cmd:. outdetect pce, graph(itc(5: abs pg2 pline(povertyline)))}{p_end}
-{phang2}
-{cmd:. outdetect pce, graph(qqplot)}
-{p_end}
+{pstd}Specify survey settings before running {cmd:outdetect}{p_end}
+{phang2}{it:{stata "svyset [pweight=weight]":svyset [pweight=weight]}}{p_end}
+{phang2}{it:{stata "outdetect pce, replace":outdetect pce, replace}}
+
+
+{pstd}Flag outliers using different normalizations, z-scores, outlier detection thresholds{p_end}
+{synoptline}
+
+{pstd}Flag outliers of pce using Box-Cox transformation and z-score based on the mean and variance{p_end}
+{phang2}{it:{stata "outdetect pce, norm(bcox) zscore(mean std) replace":outdetect pce, norm(bcox) zscore(mean std) replace}}
+
+{pstd}Flag outliers of pce using the best normalizing transformation{p_end}
+{phang2}{it:{stata "outdetect pce, best replace":outdetect pce, best replace}}
+
+{pstd}Only flag top outliers ("too large" values), and set outlier detection threshold to 2 (more "severe" than the default){p_end}
+{phang2}{it:{stata "outdetect pce, out(top) alpha(2) replace":outdetect pce, out(top) alpha(2) replace}}
+
+
+{pstd}Format and export summary statistics, produce diagnostic graphs{p_end}
+{synoptline}
+
+{pstd}Format summary statistics{p_end}
+{phang2}{it:{stata "outdetect pce, sformat(%10.0fc) replace":outdetect pce, sformat(%10.0fc) replace}}
+
+{pstd}Report poverty estimates and export output table in Excel{p_end}
+{phang2}{it:{stata "outdetect pce, pline(300000) excel(demo, replace) replace":outdetect pce, pline(300000) excel(demo, replace) replace}}
+
+{pstd}Generate Quantile-Quantile plot{p_end}
+{phang2}{it:{stata "outdetect pce, graph(qqplot) replace":outdetect pce, graph(qqplot) replace}}
+
+{pstd}Generate Incremental Trimming Curve (ITC) for the Gini index and poverty headcount ratio, discarding the 10% smallest and largest observations{p_end}
+{phang2}{it:{stata "outdetect pce, graph(itc)":outdetect pce, graph(itc)}}{p_end}
+{phang2}{it:{stata "outdetect pce, graph(itc(pline(300000)))":outdetect pce, graph(itc(pline(300000)))}}
+
+{pstd}Generate ITC for the Gini index, discarding the 15 smallest and largest observations{p_end}
+{phang2}{it:{stata "outdetect pce, graph(itc(15:abs))":outdetect pce, graph(itc(15:abs))}}
+
+{pstd}Generate ITC for the poverty gap index, discarding the 5% smallest and largest observations and export output table in Excel{p_end}
+{phang2}{it:{stata "outdetect pce, graph(itc(5:pg pline(300000))) excel(demo, replace)":outdetect pce, graph(itc(5:pg pline(300000))) excel(demo, replace)}}
+
 
 
 {marker results}{...}
@@ -307,11 +329,10 @@ The ITC reports the value of the statistic of choice, as a function of how many 
 {synoptset 17 tabbed}{...}
 {p2col 5 15 19 2: Scalars}{p_end}
 {synopt:{cmd:r(N_raw)}}number of used observations{p_end}
-{synopt:{cmd:r(N_trimmed)}}number of observations after outlier trimming{p_end}
+{synopt:{cmd:r(N_trimmed)}}number of observations after outliers trimming{p_end}
 {synopt:{cmd:r(bestnormalize)}}1 if bestnormalize, 0 otherwise{p_end}
 {synopt:{cmd:r(pearson_df)}}ratio of the Pearson P statistic and df{p_end}
 {synopt:{cmd:r(alpha)}}threshold used for defining the outlier detection region{p_end}
-
 
 
 {p2col 5 25 29 2: Macros}{p_end}
@@ -335,6 +356,9 @@ Belotti, F., Mancini, G., and Vecchi, G. 2021. {it:Outlier Detection for Welfare
 Box, G. E., and Cox, D. R. 1964. {it:An analysis of transformations}. Journal of the Royal Statistical Society: Series B (Methodological), 26(2), 211-243.
 
 {phang}
+Foster, J., Greer, J., and Thorbecke, E. 1984. {it:A class of decomposable poverty measures.} Econometrica, 761-766.
+
+{phang}
 Friedline, T., Masa, R. D., and Chowa, G. A. 2015. {it:Transforming wealth: Using the inverse hyperbolic sine (IHS) and splines to predict youth’s math achievement}. Social science research, 49, 264-287.
 
 {phang}
@@ -349,6 +373,27 @@ Yeo, I. and Johnson, R.A. 2000. {it:A new family of power transformations to imp
 
 {marker contact}{...}
 {title:Contact}
+
 {phang}
 To report any issues, please contact Giovanni Vecchi (giovanni.vecchi@uniroma2.it).
 {p_end}
+
+{title:Authors}
+
+{pstd}Federico Belotti{p_end}
+{pstd}Department of Economics and Finance{p_end}
+{pstd}University of Rome Tor Vergata{p_end}
+{pstd}Rome, Italy{p_end}
+{pstd}federico.belotti@uniroma2.it{p_end}
+
+{pstd}Giulia Mancini{p_end}
+{pstd}Department of Economics and Finance{p_end}
+{pstd}University of Rome Tor Vergata{p_end}
+{pstd}Rome, Italy{p_end}
+{pstd}giulia.mancini@uniroma2.it{p_end}
+
+{pstd}Giovanni Vecchi{p_end}
+{pstd}Department of Economics and Finance{p_end}
+{pstd}University of Rome Tor Vergata{p_end}
+{pstd}Rome, Italy{p_end}
+{pstd}giovanni.vecchi@uniroma2.it{p_end}
