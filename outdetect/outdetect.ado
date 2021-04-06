@@ -1,7 +1,7 @@
 
 ** Author: Federico Belotti
-*! version 3.1.2 - 4apr2021
-*! See below for versioning
+*! version 3.1.3 - 7apr2021
+*! See the end of ado file for versioning
 
 capture program drop outdetect
 program define outdetect, rclass byable(recall, noheader) sortpreserve
@@ -746,8 +746,10 @@ if "`_itc_trim_extent'" == "" {
 	return scalar N_trimmed = r(N)
 
 	if "`_qqplot'" != "" {
+		if "`normalize'"!="none" loc qqplot_ti "Normalized `j'"
+		else loc qqplot_ti "`j'"
 		if "`gph_options'"=="" {
-			loc gph_options ", yti("Normalized `j'") aspectratio(1) graphregion(fcolor(white)) ylab(, grid angle(360) labsi(*.8) glwidth(vthin)) ms(oh) mcol(red*1.25) rlopts(lc(black))  ytit(, si(*.8)) xlab(, grid labsi(*.8)) xtit(, si(*.8))"
+			loc gph_options ", yti("`qqplot_ti'") aspectratio(1) graphregion(fcolor(white)) ylab(, grid angle(360) labsi(*.8) glwidth(vthin)) ms(oh) mcol(red*1.25) rlopts(lc(black))  ytit(, si(*.8)) xlab(, grid labsi(*.8)) xtit(, si(*.8))"
 		}
 		qui swilk `jjj' if `touse'
 		loc _test_swilk `r(p)'
@@ -758,7 +760,7 @@ if "`_itc_trim_extent'" == "" {
 		qnorm `jjj' if `touse' `gph_options' ///
 		note(" " "Normality tests (p-value):" "Shapiro-Wilk: `: di %4.3f `_test_swilk''" ///
 			 "Shapiro-Francia: `: di %4.3f `_test_sfrancia''" ///
-			 "D'Agostino, Balanger, and D'Agostino: `: di %4.3f `_test_sfrancia''")
+			 "D'Agostino, Belanger, and D'Agostino: `: di %4.3f `_test_sfrancia''")
 	}
 
 } /* close trimming() */
@@ -915,7 +917,8 @@ else {
 		loc _ict_table_rowlab "`_ict_table_rowlab' `rr'"
 	}
 	mat rownames _itc_table = `_ict_table_rowlab'
-	mat coleq _itc_table = "`_itc_stat'" "`_itc_stat'"
+	if inlist("`_itc_stat'", "mean", "gini", "theil") mat coleq _itc_table = `"`=proper("`_itc_stat'")'"' `"`=proper("`_itc_stat'")'"'
+	else mat coleq _itc_table = `"`=upper("`_itc_stat'")'"' `"`=upper("`_itc_stat'")'"'
 
 	// Get and adjust the table's format
 	if "`_itc_stat'"!="mean" {
@@ -934,7 +937,10 @@ else {
 		if "`_itc_stat'"=="mean" loc _ytit "Mean"
 		if "`_itc_stat'"=="h" loc _ytit "Poverty headcount ratio (%)"
 		if "`_itc_stat'"=="pg" loc _ytit "Poverty gap index (%)"
-		if "`_itc_stat'"=="pg2" loc _ytit "Poverty gap{sup:2} index (%)"
+		if "`_itc_stat'"=="pg2" loc _ytit "Poverty gap squared index (%)"
+		if "`_itc_stat'"=="mld" loc _ytit "Mean logarithmic deviation index (%)"
+		if "`_itc_stat'"=="theil" loc _ytit "Theil index (%)"
+		if "`_itc_stat'"=="cv2" loc _ytit "Squared coefficient of variation (%)"
 
 		twoway line `_top_extremes' `_bottom_extremes' `_psample_t', sort ///
 			lc(red*1.25 black) lw(medthick medthick) lp(solid -) ///
@@ -985,7 +991,10 @@ foreach _s of local _sca_ {
 	cap scalar drop `_s'
 }
 
-cap mata mata drop _od _odt
+cap mata mata drop _od
+cap mata mata drop _odt
+cap mata mata drop _bottom_extremes
+cap mata mata drop _top_extremes
 
 end
 
@@ -1028,16 +1037,16 @@ program define ParseG, sclass
 end
 
 program define ParseITC, sclass
-	syntax [, ABSolute Mean GIni H PG PG2 PLINE(string) ]
+	syntax [, ABSolute Mean GIni MLD THeil CV2 H PG PG2 PLINE(string) ]
 
-	local wc : word count `mean' `gini' `h' `pg' `pg2'
+	local wc : word count `mean' `gini' `mld' `theil' `cv2' `h' `pg' `pg2'
 	if `wc' > 1 {
 		di as error "itc() invalid, only " /*
 			*/ "one stat can be specified"
 		exit 198
 	}
 
-	local stat `mean' `gini' `h' `pg' `pg2'
+	local stat `mean' `gini' `h' `pg' `pg2' `mld' `theil' `cv2'
 	if "`stat'"=="" local stat gini
 
 	if inlist("`stat'", "h", "pg", "pg2")==1 {
@@ -1333,3 +1342,4 @@ exit
 ** version 3.1.0 - 13mar2021 - Added bestnormalize option
 ** version 3.1.1 - 27mar2021 - Bug fixes and certifications checks
 ** version 3.1.2 - 4apr2021 - excel() now works also after graph(itc) and the latter produces a table with the results reported in the plot
+** version 3.1.3 - 7apr2021 - Now also mld, theil and cv2 indicator can be exploited for ITC. Fixed some labels for itc plots and tables. 

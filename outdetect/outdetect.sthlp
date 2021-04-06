@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 1.1.1  4apr2021}{...}
+{* *! version 1.1.2  7apr2021}{...}
 {viewerjumpto "Syntax" "outdetect##syntax"}{...}
 {viewerjumpto "Description" "outdetect##description"}{...}
 {viewerjumpto "Options" "outdetect##options"}{...}
@@ -259,6 +259,9 @@ The ITC reports the value of the statistic of choice, as a function of how many 
 {synopt :{opt abs:olute}}treats {opt #} as the number of trimmed observations{p_end}
 {synopt :{opt gi:ni}}Gini index (default){p_end}
 {synopt :{opt m:ean}}sample mean{p_end}
+{synopt :{opt mld}}Mean logarithmic deviation index{p_end}
+{synopt :{opt th:eil}}Theil index{p_end}
+{synopt :{opt cv2}}Squared coefficient of variation{p_end}
 {synopt :{opt h}}poverty headcount ratio{p_end}
 {synopt :{opt pg}}poverty gap index{p_end}
 {synopt :{opt pg2}}poverty gap squared index{p_end}
