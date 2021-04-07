@@ -262,6 +262,9 @@ The ITC reports the value of the statistic of choice, as a function of how many 
 {synopt :{opt mld}}Mean Logarithmic Deviation{p_end}
 {synopt :{opt th:eil}}Theil index{p_end}
 {synopt :{opt cv2}}Squared coefficient of variation{p_end}
+{synopt :{opt atk0}}Atkinson index, A(0.125){p_end}
+{synopt :{opt atk1}}Atkinson index, A(1){p_end}
+{synopt :{opt atk2}}Atkinson index, A(2){p_end}
 {synopt :{opt h}}Poverty headcount ratio{p_end}
 {synopt :{opt pg}}Poverty gap index{p_end}
 {synopt :{opt pg2}}Poverty gap squared index{p_end}
