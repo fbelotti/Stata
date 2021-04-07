@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 1.1.2  7apr2021}{...}
+{* *! version 1.1.3  8apr2021}{...}
 {viewerjumpto "Syntax" "outdetect##syntax"}{...}
 {viewerjumpto "Description" "outdetect##description"}{...}
 {viewerjumpto "Options" "outdetect##options"}{...}
