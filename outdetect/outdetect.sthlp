@@ -258,13 +258,13 @@ The ITC reports the value of the statistic of choice, as a function of how many 
 {synopt :{opt #}}specifies the maximum percentage of trimmed observations. Default is 10%{p_end}
 {synopt :{opt abs:olute}}treats {opt #} as the number of trimmed observations{p_end}
 {synopt :{opt gi:ni}}Gini index (default){p_end}
-{synopt :{opt m:ean}}sample mean{p_end}
-{synopt :{opt mld}}Mean logarithmic deviation index{p_end}
+{synopt :{opt m:ean}}Sample mean{p_end}
+{synopt :{opt mld}}Mean Logarithmic Deviation{p_end}
 {synopt :{opt th:eil}}Theil index{p_end}
 {synopt :{opt cv2}}Squared coefficient of variation{p_end}
-{synopt :{opt h}}poverty headcount ratio{p_end}
-{synopt :{opt pg}}poverty gap index{p_end}
-{synopt :{opt pg2}}poverty gap squared index{p_end}
+{synopt :{opt h}}Poverty headcount ratio{p_end}
+{synopt :{opt pg}}Poverty gap index{p_end}
+{synopt :{opt pg2}}Poverty gap squared index{p_end}
 {synopt :{cmd:pline({help varname} | #)}}specifies the poverty line. It must be specified when {cmd:h}, {cmd:pg}, or {cmd:pg2} are specified. If only {cmd:pline({help varname} | #)} is specified, then {cmd:h} is forced{p_end}
 {synoptline}
 
