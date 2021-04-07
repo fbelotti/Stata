@@ -352,6 +352,10 @@ The ITC reports the value of the statistic of choice, as a function of how many 
 {title:Reference}
 
 {marker MV2021}{...}
+
+{phang}
+Mancini, G. and Vecchi, G. 2021. {it:On the Construction of a Consumption Aggregate for Inequality and Poverty Analysis}, World Bank, mimeo.
+
 {phang}
 Belotti, F., Mancini, G., and Vecchi, G. 2021. {it:Outlier Detection for Welfare Analysts using Stata}. Mimeo.
 
@@ -368,7 +372,7 @@ Friedline, T., Masa, R. D., and Chowa, G. A. 2015. {it:Transforming wealth: Usin
 Rousseeuw, P. J., and Croux, C. 1993. {it:Alternatives to the median absolute deviation}. Journal of the American Statistical association, 88(424), 1273-1283.
 
 {phang}
-Snedecor, G. W., Cochran, W. G. 1989. {it:Statistical methods}. Ames: Iowa State Univ. Press, Iowa.
+Snedecor, G. W., Cochran, W. G. 1989. {it:Statistical methods}. Ames: Iowa State Univ. Press.
 
 {phang}
 Yeo, I. and Johnson, R.A. 2000. {it:A new family of power transformations to improve normality or symmetry}. Biometrika, 87, 954-959.
