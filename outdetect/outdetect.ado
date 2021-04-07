@@ -944,6 +944,9 @@ else {
 		if "`_itc_stat'"=="mld" loc _ytit "Mean logarithmic deviation index (%)"
 		if "`_itc_stat'"=="theil" loc _ytit "Theil index (%)"
 		if "`_itc_stat'"=="cv2" loc _ytit "Squared coefficient of variation (%)"
+		if "`_itc_stat'"=="atk0" loc _ytit "Atkinson index (%) - A(0.125)"
+		if "`_itc_stat'"=="atk1" loc _ytit "Atkinson index (%) - A(1)"
+		if "`_itc_stat'"=="atk2" loc _ytit "Atkinson index (%) - A(2)"
 
 		twoway line `_top_extremes' `_bottom_extremes' `_psample_t', sort ///
 			lc(red*1.25 black) lw(medthick medthick) lp(solid -) ///
@@ -1346,4 +1349,4 @@ exit
 ** version 3.1.1 - 27mar2021 - Bug fixes and certifications checks
 ** version 3.1.2 - 4apr2021 - excel() now works also after graph(itc) and the latter produces a table with the results reported in the plot
 ** version 3.1.3 - 7apr2021 - Now also mld, theil and cv2 indicator can be exploited for ITC. Fixed some labels for itc plots and tables.
-** version 3.1.4 - 8apr2021 - Now also Atkinson class can be exploited for ITC.  
+** version 3.1.4 - 8apr2021 - Now also Atkinson class can be exploited for ITC.
