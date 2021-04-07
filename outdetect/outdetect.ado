@@ -1,6 +1,6 @@
 
 ** Author: Federico Belotti
-*! version 3.1.3 - 7apr2021
+*! version 3.1.4 - 8apr2021
 *! See the end of ado file for versioning
 
 capture program drop outdetect
@@ -918,6 +918,9 @@ else {
 	}
 	mat rownames _itc_table = `_ict_table_rowlab'
 	if inlist("`_itc_stat'", "mean", "gini", "theil") mat coleq _itc_table = `"`=proper("`_itc_stat'")'"' `"`=proper("`_itc_stat'")'"'
+	else if inlist("`_itc_stat'", "atk0")  mat coleq _itc_table = "A(0.125)" "A(0.125)"
+	else if inlist("`_itc_stat'", "atk1")  mat coleq _itc_table = "A(1)" "A(1)"
+	else if inlist("`_itc_stat'", "atk2")  mat coleq _itc_table = "A(2)" "A(2)"
 	else mat coleq _itc_table = `"`=upper("`_itc_stat'")'"' `"`=upper("`_itc_stat'")'"'
 
 	// Get and adjust the table's format
@@ -1037,16 +1040,16 @@ program define ParseG, sclass
 end
 
 program define ParseITC, sclass
-	syntax [, ABSolute Mean GIni MLD THeil CV2 H PG PG2 PLINE(string) ]
+	syntax [, ABSolute Mean GIni MLD THeil CV2 ATK0 ATK1 ATK2 H PG PG2 PLINE(string) ]
 
-	local wc : word count `mean' `gini' `mld' `theil' `cv2' `h' `pg' `pg2'
+	local wc : word count `mean' `gini' `mld' `theil' `cv2' `h' `pg' `pg2' `atk0' `atk1' `atk2'
 	if `wc' > 1 {
 		di as error "itc() invalid, only " /*
 			*/ "one stat can be specified"
 		exit 198
 	}
 
-	local stat `mean' `gini' `h' `pg' `pg2' `mld' `theil' `cv2'
+	local stat `mean' `gini' `h' `pg' `pg2' `mld' `theil' `cv2' `atk0' `atk1' `atk2'
 	if "`stat'"=="" local stat gini
 
 	if inlist("`stat'", "h", "pg", "pg2")==1 {
@@ -1342,4 +1345,5 @@ exit
 ** version 3.1.0 - 13mar2021 - Added bestnormalize option
 ** version 3.1.1 - 27mar2021 - Bug fixes and certifications checks
 ** version 3.1.2 - 4apr2021 - excel() now works also after graph(itc) and the latter produces a table with the results reported in the plot
-** version 3.1.3 - 7apr2021 - Now also mld, theil and cv2 indicator can be exploited for ITC. Fixed some labels for itc plots and tables. 
+** version 3.1.3 - 7apr2021 - Now also mld, theil and cv2 indicator can be exploited for ITC. Fixed some labels for itc plots and tables.
+** version 3.1.4 - 8apr2021 - Now also Atkinson class can be exploited for ITC.  
