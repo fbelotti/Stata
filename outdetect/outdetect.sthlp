@@ -7,7 +7,7 @@
 {viewerjumpto "Stored results" "outdetect##results"}{...}
 {viewerjumpto "Reference" "outdetect##reference"}{...}
 {p2colset 1 14 19 2}{...}
-{p2col:{bf: outdetect} {hline 2}}Outlier detection and diagnostics, with a focus on inequality and poverty estimates
+{p2col:{bf: outdetect} {hline 2}}Outlier detection and diagnostics for welfare analysts
 {p_end}
 {p2colreset}{...}
 
@@ -30,6 +30,7 @@
 {syntab:Main}
 {synopt :{cmdab:norm:alize(}{it:{help outdetect##normtype:normtype}})}specify the transformation for normalizing {help varname}; default is {help outdetect##MV2021:Yeo and Johnson (2000)}{p_end}
 {synopt :{cmdab:best:normalize}}use the best fitting transformation for normalizing {help varname}{p_end}
+{synopt :{cmdab:normvar(}{it:{help varname}})}create a new variable containing the normalized variable{p_end}
 {synopt :{cmdab:zscore(}{it:{help outdetect##stat1:stat1}} {it:{help outdetect##stat2:stat2}})}define the {it:z}-score of the normalized variable; default is {it:{help outdetect##stat1:stat1}} = median,
 {it:{help outdetect##stat2:stat2}} = Q-statistic {help outdetect##MV2021:(Rousseeuw and Croux, 1993)}{p_end}
 {synopt :{opt alpha(#)}}specify the threshold of the outlier detection region; default is 3{p_end}
@@ -42,6 +43,7 @@
 {synopt :{opt madf:actor(#)}}specify Fisher consistency factor for median absolute deviation; default is 1.4826{p_end}
 {synopt :{opt sf:actor(#)}}specify Fisher consistency factor for S-statistic; default is 1.1926{p_end}
 {synopt :{opt qf:actor(#)}}specify Fisher consistency factor for Q-statistic; default is 2.2219{p_end}
+{synopt :{opt small}}apply small samples correction for MAD, S and Q statistics{p_end}
 
 {syntab:Reporting}
 {synopt :{opt sformat(%fmt)}}specify format for summary statistics panel{p_end}
@@ -164,6 +166,9 @@ Therefore, the Pearson/df ratio can be interpreted as a measure of how close a d
 When this option is specified, {cmd:outdetect} stores the Pearson/df ratio corresponding to the best normalizing transformation.
 
 {phang}
+{opt normvar(varname)} creates a new variable corresponding to the normalization specified via {cmd:normalize()} or the best normalization identified by {cmd:bestnormalize}.
+
+{phang}
 {opt zscore(stat1 stat2)} specifies the {it:z}-score of the normalized variable. If {it:x} is the normalized variable, the {it:z}-score is defined as {it: z = (x - stat1)/stat2}.
 
 {marker stat1}{...}
@@ -225,6 +230,9 @@ When this option is specified, {cmd:outdetect} stores the Pearson/df ratio corre
 {phang}
 {opt qf:actor(#)} specifies the Fisher consistency factor to be applied to the Q-statistic, if this statistic is selected for the calculation of the z-score. The default is 2.2219.
 
+{phang}
+{opt small} applies small samples correction for MAD, S and Q statistics.
+
 
 {dlgtab:Reporting}
 
@@ -249,9 +257,16 @@ namely the poverty headcount (H), poverty gap (PG), and poverty gap squared (PG2
 
 {phang2}
 {opt itc}([{it:#} :] {help outdetect##itc_options:{it:itc_options}}) produces the Incremental Trimming Curve (ITC) for a statistic of interest {help outdetect##MV2021:(Mancini and Vecchi, 2021)}.
-The ITC reports the value of the statistic of choice, as a function of how many extreme values are discarded (trimmed) from the distribution of {help varname}. Weights are adjusted at each iteration. The ITC can be used to assess the sensitivity of the statistic of interest to the choice of the outlier detection threshold. By default, the horizontal axis reports the number of trimmed observations as a percentage of all non-missing values of {help varname}, but the number can be reported in absolute terms, too.
+The ITC reports the value of the statistic of choice, as a function of how many extreme values are discarded (trimmed) from the distribution of {help varname}.
+Weights are adjusted at each iteration.
+The ITC can be used to assess the sensitivity of the statistic of interest to the choice of the outlier detection threshold. By default,
+the horizontal axis reports the number of trimmed observations as a percentage of all non-missing values of {help varname}, but the number can be reported in absolute terms, too.
+
+{phang2}
+{opt ifc}([{it:#} :] {help outdetect##ifc_options:{it:ifc_options}}) produces the Influence Function Curve (IFC) for inequality indexes {help outdetect##CF2007:(Cowell and Flachaire, 2007)}. The IFC reports a measure of sensitivity of the index of interest to influential observations. The measure is a function of the i-th smallest or largest observation, i.e. IF(i) = [I-I(i)]/I, where I is the index estimate obtained using the full sample, and I(i) is the index estimate obtained using a sample from which the i-th observation has been omitted.
 
 
+{marker itc_options}{...}
 {synoptset 20 tabbed}{...}
 {synopthdr:itc_options}
 {synoptline}
@@ -269,6 +284,21 @@ The ITC reports the value of the statistic of choice, as a function of how many 
 {synopt :{opt pg}}Poverty gap index{p_end}
 {synopt :{opt pg2}}Poverty gap squared index{p_end}
 {synopt :{cmd:pline({help varname} | #)}}specifies the poverty line. It must be specified when {cmd:h}, {cmd:pg}, or {cmd:pg2} are specified. If only {cmd:pline({help varname} | #)} is specified, then {cmd:h} is forced{p_end}
+{synoptline}
+
+
+{marker ifc_options}{...}
+{synoptset 20 tabbed}{...}
+{synopthdr:ifc_options}
+{synoptline}
+{synopt :{opt #}}specifies the maximum # of large and small observations which, one at a time, are omitted for the calculation of the influence curve. Default is 10{p_end}
+{synopt :{opt gi:ni}}Gini index (default){p_end}
+{synopt :{opt mld}}Mean Logarithmic Deviation{p_end}
+{synopt :{opt th:eil}}Theil index{p_end}
+{synopt :{opt cv2}}Squared coefficient of variation{p_end}
+{synopt :{opt atk0}}Atkinson index, A(0.125){p_end}
+{synopt :{opt atk1}}Atkinson index, A(1){p_end}
+{synopt :{opt atk2}}Atkinson index, A(2){p_end}
 {synoptline}
 
 
@@ -324,6 +354,8 @@ The ITC reports the value of the statistic of choice, as a function of how many 
 {pstd}Generate ITC for the poverty gap index, discarding the 5% smallest and largest observations and export output table in Excel{p_end}
 {phang2}{it:{stata "outdetect pce, graph(itc(5:pg pline(300000))) excel(demo, replace)":outdetect pce, graph(itc(5:pg pline(300000))) excel(demo, replace)}}
 
+{pstd}Generate the Influence Function Curve (IFC) for the mean logarithm deviation index, discarding the 5 smallest and largest observations{p_end}
+{phang2}{it:{stata "outdetect pce, graph(ifc(5: mld))":outdetect pce, graph(ifc(5: mld))}}
 
 
 {marker results}{...}
@@ -355,12 +387,13 @@ The ITC reports the value of the statistic of choice, as a function of how many 
 {title:Reference}
 
 {marker MV2021}{...}
+{phang}
+Belotti, F., G. Mancini, and G. Vecchi. 2022. {it:Outlier Detection for Welfare Analysis}. Unpublished manuscript, University of Rome “Tor Vergata”.
 
 {phang}
-Mancini, G. and Vecchi, G. 2021. {it:On the Construction of a Consumption Aggregate for Inequality and Poverty Analysis}, World Bank, mimeo.
-
-{phang}
-Belotti, F., Mancini, G., and Vecchi, G. 2021. {it:Outlier Detection for Welfare Analysts using Stata}. Mimeo.
+Mancini, G. and G. Vecchi. 2022.
+{browse "https://documents.worldbank.org/en/publication/documents-reports/documentdetail/099225003092220001/p1694340e80f9a00a09b20042de5a9cd47e":{it:On the Construction of the Consumption Aggregate for Inequality and Poverty Analysis}}.
+Washington, DC: World Bank.
 
 {phang}
 Box, G. E., and Cox, D. R. 1964. {it:An analysis of transformations}. Journal of the Royal Statistical Society: Series B (Methodological), 26(2), 211-243.
@@ -381,12 +414,14 @@ Snedecor, G. W., Cochran, W. G. 1989. {it:Statistical methods}. Ames: Iowa State
 Yeo, I. and Johnson, R.A. 2000. {it:A new family of power transformations to improve normality or symmetry}. Biometrika, 87, 954-959.
 {p_end}
 
+
 {marker contact}{...}
 {title:Contact}
 
 {phang}
 To report any issues, please contact Giovanni Vecchi (giovanni.vecchi@uniroma2.it).
 {p_end}
+
 
 {title:Authors}
 
