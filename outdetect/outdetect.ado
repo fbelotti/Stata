@@ -1,14 +1,11 @@
 
 ** Author: Federico Belotti, Giulia Mancini and Giovanni Vecchi
-*! version 3.1.7 - 17nov2022
+*! version 3.2.0 - 14may2024
 *! See the end of ado file for versioning
 
-/* TODO: Look at pshare (BJ), update DASP */
-/* TODO: share bottom40, Watts */
-/* TODO: p90/p10 is unexpected with PCE tunisia (to check) */
 
 
-version 15.1
+version 14
 
 capture program drop outdetect
 program define outdetect, rclass byable(recall, noheader) sortpreserve
@@ -145,6 +142,9 @@ ParseG, `graph'
 if "`s(itc)'"!="" loc _itc_trim_extent `s(itc)'
 if "`s(hoc)'"!="" loc _hoc_trim_extent `s(hoc)'
 if "`s(qqplot)'"!="" loc _qqplot "`s(qqplot)'"
+if "`s(qqpareto)'"!="" loc _qqpareto "`s(qqpareto)'"
+if "`s(zipf)'"!="" loc _zipf "`s(zipf)'"
+if "`s(zipf_opt)'"!="" loc _zipf_opt "`s(zipf_opt)'"
 if "`s(plinevar)'"!= "" local _g_plinevar "`s(plinevar)'"
 if "`_g_plinevar'"=="" local _g_plinevar 0
 if "`s(pline)'"!="" loc _g_pline "`s(pline)'"
@@ -157,6 +157,7 @@ if "`s(hoc_stat)'"!= "" local _hoc_stat "`s(hoc_stat)'"
 if "`s(hoc_abs)'"!= "" local _hoc_abs "`s(hoc_abs)'"
 if "`_hoc_abs'"=="abs" local _hoc_abs 1
 else local _hoc_abs 0
+
 
 ***********************************************
 ****** Parsing of method() and zscore() *******
@@ -196,7 +197,7 @@ loc touse `back_touse'
 
 
 
-if ("`_itc_trim_extent'" == "" & "`_hoc_trim_extent'" == "") {
+if ("`_itc_trim_extent'" == "" & "`_hoc_trim_extent'" == "" & "`_zipf'"=="" & "`_qqpareto'"=="") {
 
 	/* Initialize _out variable */
 	/* Check before if -clear- has been specified */
@@ -316,7 +317,7 @@ if ("`_itc_trim_extent'" == "" & "`_hoc_trim_extent'" == "") {
 	/// Compute welfare indicators (pre-detection)
 
 	/// For all other computation use data from _out_getdata()
-	noi m _od = _out_getdata("`j'", "`wvar'", "`weight_type'", "`touse'")
+	`noi' m _od = _out_getdata("`j'", "`wvar'", "`weight_type'", "`touse'")
 
 	// Here the gini function needs to stay on its own due to the sort, stable
 	// Actually we pass the _od structure to collect info
@@ -710,8 +711,9 @@ if ("`_itc_trim_extent'" == "" & "`_hoc_trim_extent'" == "") {
 
 	// Get fraction of outliers
 	/// Display setup
-	di in smcl "{hline 64}"
-	di "{ul: {help outdetect} set-up}:"
+	*di in smcl "{hline 64}"
+	di ""
+	di " {help outdetect} set-up:"
 	*di in smcl "{hline 64}"
 	di ""
 	di in yel "  Normalization: " in gr "`transftitle'"
@@ -725,8 +727,8 @@ if ("`_itc_trim_extent'" == "" & "`_hoc_trim_extent'" == "") {
 	di ""
 
 	/// Display tables
-	di in smcl "{hline 64}"
-	matlist _out_detected`_bylev', cspec(& %13s | %9.0g & %9.2f & %9.2f &) rspec(&-&-&) /*row(Outliers)*/ tind(1) title("{ul: Incidence of outliers}:") noblank
+	*di in smcl "{hline 64}"
+	matlist _out_detected`_bylev', cspec(& %13s | %9.0g & %9.2f & %9.2f &) rspec(&-&-&) /*row(Outliers)*/ tind(1) title("Incidence of outliers:") noblank
 
 	mat __ind_pre_s`_bylev' = __ind_pre_s`_bylev''
 	mat __ind_pre_ss`_bylev' = __ind_pre_ss`_bylev''
@@ -736,8 +738,8 @@ if ("`_itc_trim_extent'" == "" & "`_hoc_trim_extent'" == "") {
 	mat __ind_ss`_bylev' = __ind_pre_ss`_bylev',__ind_trim_ss`_bylev'
 
 	di ""
-	di in smcl "{hline 64}"
-	matlist __ind_s`_bylev', format(`sfmt') twidth(13) border(b) aligncolnames(center) /*row(Statistics)*/ tind(1) title("{ul: Statistics for raw and trimmed `j'}:") noblank
+	*di in smcl "{hline 64}"
+	matlist __ind_s`_bylev', format(`sfmt') twidth(13) border(b) aligncolnames(center) /*row(Statistics)*/ tind(1) title("Statistics for raw and trimmed `j':") noblank
 	*di _col(15) in smcl "{c |}" /* Here we need 13 blanks */
 
 	matlist __ind_ss`_bylev', format(`ifmt') twidth(13) border(b) nam(r) noblank
@@ -747,13 +749,27 @@ if ("`_itc_trim_extent'" == "" & "`_hoc_trim_extent'" == "") {
 	mat __ind`_bylev' = __ind_s`_bylev' \ __ind_ss`_bylev'
 
 	***** Here excel() option in action
-	*** todo: allow excel() when by is used. Multiple sheets?
+	*** TODO: allow excel() when by is used. Multiple sheets?
 	if "`excel'"!="" {
 		gettoken savename replace: excel, parse(",")
 		local savename = subinstr("`savename'", " ", "", .)
 		local replace = subinstr("`replace'", ",", "", .)
 		local replace = strtrim("`replace'")
-		m _out_excel("`savename'", "`replace'")
+
+		if c(stata_version) < 15 {
+			local export _out_excel
+		}
+		else if c(stata_version) < 17 {
+			local export _out_excel15
+		}
+		else if c(stata_version) < 18 {
+			local export _out_excel17
+		}
+		else {
+			local export _out_excel18
+		}
+
+		m `export'("`savename'", "`replace'")
 	}
 
 	******************************
@@ -764,13 +780,12 @@ if ("`_itc_trim_extent'" == "" & "`_hoc_trim_extent'" == "") {
 	return mat b`_bylev' = __ind`_bylev'
 	return mat out`_bylev' = _out_detected`_bylev'
 	return sca alpha = `alpha'
-	ret local normalization "`transf'"
 	if "`bestnormalize'"!="" {
 		ret scalar bestnormalize = 1
 		ret scalar pearson_df = _best_p_def
 	}
 	else ret scalar bestnormalize = 0
-
+	ret local normalization "`transf'"
 
 	qui count if `touse_raw'==1
 	return scalar N_raw = r(N)
@@ -794,7 +809,8 @@ if ("`_itc_trim_extent'" == "" & "`_hoc_trim_extent'" == "") {
 		qui sktest `jjj' if `touse'
 		loc _test_sfrancia `r(P_chi2)'
 		qnorm `jjj' if `touse' `gph_options' ///
-		note(" " "Normality tests (p-value):" "Shapiro-Wilk: `: di %4.3f `_test_swilk''" ///
+		note(" " "Normalization: `transftitle'" ///
+		     "Normality tests ({it:p}-value):" "Shapiro-Wilk: `: di %4.3f `_test_swilk''" ///
 			 "Shapiro-Francia: `: di %4.3f `_test_sfrancia''" ///
 			 "D'Agostino, Belanger, and D'Agostino: `: di %4.3f `_test_sfrancia''")
 	}
@@ -988,7 +1004,7 @@ else {
 
 			twoway line `_top_extremes' `_bottom_extremes' `_psample_t', sort ///
 				lc(red*1.25 black) lw(medthick medthick) lp(solid -) ///
-				graphregion(fcolor(white)) legend(col(2) size(*.8)) ///
+				graphregion(fcolor(white)) legend(pos(6) col(2) size(*.8)) ///
 				ylab(,angle(h) format(%12.0gc) grid glwidth(vthin) labsi(*.8)) ///
 				ytit(`_ytit', si(*.8)) ///
 				xlab(`_gxlab') ///
@@ -1186,6 +1202,76 @@ else {
 		return scalar N_raw = r(N)
 
 	}
+	else if "`_zipf'" != "" {
+		
+		`noi' m _od = _out_getdata("`j'", "`wvar'", "`weight_type'", "`touse'")
+		`noi' m _out_zipf = _out_zipf(_od, "`_zipf_opt'")
+		
+		
+		if "`_zipf_opt'"=="" {
+			tempvar logx logrank
+			getmata (`logx' `logrank') = _out_zipf, replace force
+			sum `logx', mean
+			local yax_min = round(`r(min)')
+			local yax_max = round(`r(max)')
+			local step = round((`yax_max'-`yax_min')/5)
+			label var `logx' "log(`j')"
+			label var `logrank' "log(rank(`j'))"
+			twoway line `logx' `logrank', ///
+					lc(red*1.25) lw(medthick) lp(solid) ///
+					graphregion(fcolor(white)) ///
+					ylab(`yax_min'(`step')`yax_max', angle(h) format(%12.0gc) ///
+					grid glwidth(vthin) labsi(*.8))  ///
+					ytit(log(`j'), si(*.8)) ///
+					xlab(`_gxlab') ///
+					xtit(log(rank(`j')), si(*.8)) 
+		}
+		else if "`_zipf_opt'"=="lognormal" {
+			tempvar logx logrank logx_ln logrank_ln
+			getmata (`logx' `logrank' `logx_ln' `logrank_ln') = _out_zipf, replace force 
+			sum `logx', mean
+			local yax_min = round(`r(min)')
+			local yax_max = round(`r(max)')
+			local step = round((`yax_max'-`yax_min')/5)
+			label var `logx' "log(`j')"
+			label var `logrank' "log(rank(`j'))"
+			twoway (line `logx' `logrank' , lc(red*1.25) lw(medthick) lp(solid)) ///
+				   (line `logx_ln' `logrank_ln', lc(black) lw(medthick) lp(-)), ///
+					graphregion(fcolor(white)) ///
+					ylab(`yax_min'(`step')`yax_max', angle(h) format(%12.0gc) ///
+					grid glwidth(vthin) labsi(*.8))  ///
+					ytit(log(`j'), si(*.8)) ///
+					xlab(`_gxlab') ///
+					xtit(log(rank(`j')), si(*.8)) ///
+					leg(pos(6) lab(1 "log(`j')") lab(2 "Lognormal") r(1))
+			 
+			*list `logx' `logrank' `logx_ln' `logrank_ln' in 1/20
+			
+		}
+
+	}
+	else if "`_qqpareto'" != "" {
+		
+		`noi' m _od = _out_getdata("`j'", "`wvar'", "`weight_type'", "`touse'")
+		`noi' m _out_qqpareto = _out_qqpareto(_od)
+		tempvar logx qexp
+		getmata (`logx' `qexp') = _out_qqpareto, replace force 
+		sum `logx', mean
+		local yax_min = round(`r(min)')
+		local yax_max = round(`r(max)')
+		local step = round((`yax_max'-`yax_min')/5)
+		label var `logx' "log(`j')"
+		label var `qexp' "Quantiles of standard exponential"
+		twoway line `logx' `qexp', ///
+				lc(red*1.25) lw(medthick) lp(solid) ///
+				graphregion(fcolor(white)) ///
+				ylab(`yax_min'(`step')`yax_max', angle(h) format(%12.0gc) ///
+				grid glwidth(vthin) labsi(*.8))  ///
+				ytit(log(`j'), si(*.8)) ///
+				xlab(`_gxlab') ///
+				xtit("Quantiles of standard exponential", si(*.8)) 
+
+	}
 
 }
 
@@ -1217,7 +1303,7 @@ end
 /* ----------------------------------------------------------------- */
 
 program define ParseG, sclass
-	syntax [, ITCccc IFCccc ITC(string) IFC(string) QQplot * ]
+	syntax [, ITCccc IFCccc ITC(string) IFC(string) QQPLot QQPAreto ZIPFccc ZIPF(string) * ]
 
 	// Trick: just create loc hoc and hocccc for avoiding changing all
 	if "`ifc'"!="" local hoc "`ifc'"
@@ -1226,6 +1312,14 @@ program define ParseG, sclass
 	if "`itcccc'"!="" local itc "5:gini"
 	if "`hocccc'"!="" local hoc "10:gini"
 
+	
+	if "`zipf'"!="" {
+		ParseZIPF, `zipf'
+		local zipf_opt "`s(zipf_opt)'"
+		local zipf "zipf"
+	}
+	else if "`zipfccc'"!="" local zipf "zipf"
+	
 	if "`itc'"!="" {
 		gettoken itc itc_options : itc, parse(":")
 		cap confirm n `itc'
@@ -1259,11 +1353,24 @@ program define ParseG, sclass
 	}
 
 	if "`itc'"!="" sret local itc = `itc'
+	if "`zipf'"!="" {
+		sret local zipf "`zipf'"
+		sret local zipf_opt "`zipf_opt'"
+	}
 	if "`hoc'"!="" sret local hoc = `hoc'
 	if "`qqplot'"!="" sret local qqplot "`qqplot'"
+	if "`qqpareto'"!="" sret local qqpareto "`qqpareto'"
 
 end
 
+program define ParseZIPF, sclass
+	syntax [, LOGNormal ]
+
+	if "`lognormal'"!="" local zipf_opt "lognormal"
+	sret loc zipf_opt "`zipf_opt'"
+	
+end 
+	
 program define ParseITC_HOC, sclass
 	syntax [, ABSolute Mean GIni MLD THeil CV2 ATK0 ATK1 ATK2 H PG PG2 PLine(string) HOC ]
 
@@ -1588,3 +1695,11 @@ exit
 ** version 3.1.5 - 27may2021 - Added the generate() option to get out the normalized variable.
 ** version 3.1.6 - 20jul2022 - Bug fixes on weighted standard deviation and Q statistic
 ** version 3.1.7 - 17nov2022 - Add the ifc() option for plotting the Cowell and Flachaire (2007) IF curve. See Cowell and Flachaire (2007, JOE) pag. 1067
+** version 3.1.8 - 30oct2023 - Allows the save() option with all Stata versions till 18. The workaround is the only available, suggested by Jeff Pitblado. From now on -outdetetct- runs smoothly on Stata from 14 to 18
+** version 3.1.9 - 8may2024 - Added options graph(zipf) and graph(qqpareto)
+** version 3.2.0 - 14may2024 - Added sub-option lognormal for zipf: graph(zipf(logn))
+
+/* TODO: Look at pshare (BJ), update DASP */
+/* TODO: share bottom40, Watts */
+/* TODO: p90/p10 is unexpected with PCE tunisia (to check) */
+
