@@ -1215,6 +1215,10 @@ else {
 			local yax_min = round(`r(min)')
 			local yax_max = round(`r(max)')
 			local step = round((`yax_max'-`yax_min')/5)
+			sum `logrank', mean
+			local xax_min = round(`r(min)')
+			local xax_max = round(`r(max)')
+			local xstep = round((`yax_max'-`yax_min')/5)
 			label var `logx' "log(`j')"
 			label var `logrank' "log(rank(`j'))"
 			twoway line `logx' `logrank', ///
@@ -1223,7 +1227,7 @@ else {
 					ylab(`yax_min'(`step')`yax_max', angle(h) format(%12.0gc) ///
 					grid glwidth(vthin) labsi(*.8))  ///
 					ytit(log(`j'), si(*.8)) ///
-					xlab(`_gxlab') ///
+					xlab(`xax_min'(`xstep')`xax_max', labsi(*.8)) ///
 					xtit(log(rank(`j')), si(*.8)) 
 		}
 		else if "`_zipf_opt'"=="lognormal" {
@@ -1233,15 +1237,19 @@ else {
 			local yax_min = round(`r(min)')
 			local yax_max = round(`r(max)')
 			local step = round((`yax_max'-`yax_min')/5)
+			sum `logrank', mean
+			local xax_min = round(`r(min)')
+			local xax_max = round(`r(max)')
+			local xstep = round((`yax_max'-`yax_min')/5)
 			label var `logx' "log(`j')"
 			label var `logrank' "log(rank(`j'))"
 			twoway (line `logx' `logrank' , lc(red*1.25) lw(medthick) lp(solid)) ///
-				   (line `logx_ln' `logrank_ln', lc(black) lw(medthick) lp(-)), ///
+				   (line `logx_ln' `logrank_ln' if `logrank_ln'>=0, lc(black) lw(medthick) lp(-)), ///
 					graphregion(fcolor(white)) ///
 					ylab(`yax_min'(`step')`yax_max', angle(h) format(%12.0gc) ///
 					grid glwidth(vthin) labsi(*.8))  ///
 					ytit(log(`j'), si(*.8)) ///
-					xlab(`_gxlab') ///
+					xlab(`xax_min'(`xstep')`xax_max', labsi(*.8)) ///
 					xtit(log(rank(`j')), si(*.8)) ///
 					leg(pos(6) lab(1 "log(`j')") lab(2 "Lognormal") r(1))
 			 
@@ -1268,7 +1276,7 @@ else {
 				ylab(`yax_min'(`step')`yax_max', angle(h) format(%12.0gc) ///
 				grid glwidth(vthin) labsi(*.8))  ///
 				ytit(log(`j'), si(*.8)) ///
-				xlab(`_gxlab') ///
+				xlab(`_gxlab', labsi(*.8)) ///
 				xtit("Quantiles of standard exponential", si(*.8)) 
 
 	}
