@@ -4,7 +4,6 @@
 *! See the end of ado file for versioning
 
 
-
 version 14
 
 capture program drop outdetect
@@ -20,7 +19,6 @@ syntax varlist(max=1) [if] [in] [pw aw/] [, ///
 						    noPERCent Alpha(real 3) MADFactor(real 1.4826022) SFormat(string) IFormat(string) ///
 						    SFactor(real 1.1926) QFactor(real 2.2219) ///
 						    NOI FORCE FORCEFraction(real 0.5) TIMER NORMVAR(string) SMALL ]
-
 
 
 loc cutoff `alpha'
@@ -332,6 +330,8 @@ if ("`_itc_trim_extent'" == "" & "`_hoc_trim_extent'" == "" & "`_zipf'"=="" & "`
 	restore
 
 	// Compute MLD family of indicators
+	`noi' m _out_MLD(_od, -1, "no")
+	sca _out_mld_1 = _out_mld
 	`noi' m _out_MLD(_od, 0, "no")
 	sca _out_mld0 = _out_mld
 	`noi' m _out_MLD(_od, 1, "no")
@@ -387,6 +387,7 @@ if ("`_itc_trim_extent'" == "" & "`_hoc_trim_extent'" == "" & "`_zipf'"=="" & "`
 
 
 	mat __ind_pre_ss`_bylev' = _out_gini, /* inequality */
+				_out_mld_1,
 				_out_mld0,
 				_out_mld1,
 				_out_mld2,
@@ -397,13 +398,13 @@ if ("`_itc_trim_extent'" == "" & "`_hoc_trim_extent'" == "" & "`_zipf'"=="" & "`
 
 	mat colnames __ind_pre_s`_bylev' = "Mean" "Median" "SD" "CV (%)" "IQR";
 
-	mat colnames __ind_pre_ss`_bylev' = "Gini" "MLD" "Theil" "CV2" "A(0.125)" "A(1)" "A(2)" "p90/p10" `povlab';
+	mat colnames __ind_pre_ss`_bylev' = "Gini" "GE(-1)" "MLD" "Theil" "GE(2)" "A(0.125)" "A(1)" "A(2)" "p90/p10" `povlab';
 
 	mat rownames __ind_pre_s`_bylev' = "Raw";
 	mat rownames __ind_pre_ss`_bylev' = "Raw";
 	mat coleq __ind_pre_s`_bylev' = "Summary stats" "Summary stats" "Summary stats" "Summary stats" "Summary stats";
 
-	mat coleq __ind_pre_ss`_bylev' = "Inequality" "Inequality" "Inequality" "Inequality" "Inequality" "Inequality"
+	mat coleq __ind_pre_ss`_bylev' = "Inequality" "Inequality" "Inequality" "Inequality" "Inequality" "Inequality" "Inequality"
 								  "Inequality" "Inequality" `poveqlab';
 	#del cr
 
@@ -621,6 +622,8 @@ if ("`_itc_trim_extent'" == "" & "`_hoc_trim_extent'" == "" & "`_zipf'"=="" & "`
 	restore
 
 	// Compute MLD family of indicators
+	`noi' m _out_MLD(_odt, -1, "no")
+	sca _out_mld_1 = _out_mld
 	`noi' m _out_MLD(_odt, 0, "no")
 	sca _out_mld0 = _out_mld
 	`noi' m _out_MLD(_odt, 1, "no")
@@ -665,6 +668,7 @@ if ("`_itc_trim_extent'" == "" & "`_hoc_trim_extent'" == "" & "`_zipf'"=="" & "`
 
 
 	mat __ind_trim_ss`_bylev' = _out_gini, /* inequality */
+				_out_mld_1,
 				_out_mld0,
 				_out_mld1,
 				_out_mld2,
@@ -675,13 +679,13 @@ if ("`_itc_trim_extent'" == "" & "`_hoc_trim_extent'" == "" & "`_zipf'"=="" & "`
 
 	mat colnames __ind_trim_s`_bylev' = "Mean" "Median" "SD" "CV (%)" "IQR";
 
-	mat colnames __ind_trim_ss`_bylev' = "Gini" "MLD" "Theil" "CV2" "A(0.125)" "A(1)" "A(2)" "p90/p10" `povlab';
+	mat colnames __ind_trim_ss`_bylev' = "Gini" "GE(-1)" "MLD" "Theil" "GE(2)" "A(0.125)" "A(1)" "A(2)" "p90/p10" `povlab';
 
 	mat rownames __ind_trim_s`_bylev' = "Trimmed";
 	mat rownames __ind_trim_ss`_bylev' = "Trimmed";
 	mat coleq __ind_trim_s`_bylev' = "Summary stats" "Summary stats" "Summary stats" "Summary stats" "Summary stats";
 
-	mat coleq __ind_trim_ss`_bylev' = "Inequality" "Inequality" "Inequality" "Inequality" "Inequality" "Inequality"
+	mat coleq __ind_trim_ss`_bylev' = "Inequality" "Inequality" "Inequality" "Inequality" "Inequality" "Inequality" "Inequality"
 								  "Inequality" "Inequality" `poveqlab';
 	#del cr
 
@@ -986,7 +990,7 @@ else {
 			*di "`sfmt'"
 		}
 		di ""
-		matlist _itc_table, format(`sfmt') twidth(18) border(b) aligncolnames(center) /*row(Statistics)*/ tind(1) title("{ul: Incremental trimming curve for `j'}:") noblank  row("`_itc_tab_rowtitle'") showcoleq(c)
+		matlist _itc_table, format(`sfmt') twidth(18) border(b) aligncolnames(center) /*row(Statistics)*/ tind(1) title("Incremental trimming curve for `j':") noblank  row("`_itc_tab_rowtitle'") showcoleq(c)
 
 		if "`gph_options'" == "" {
 
@@ -1133,7 +1137,7 @@ else {
 		}
 		di ""
 
-		matlist _hoc_table, format(`sfmt') twidth(18) border(b) aligncolnames(center) /*row(Statistics)*/ tind(1) title("{ul: Influence curve for `j'}:") noblank  row("`_hoc_tab_rowtitle'") showcoleq(c)
+		matlist _hoc_table, format(`sfmt') twidth(18) border(b) aligncolnames(center) /*row(Statistics)*/ tind(1) title("Influence curve for `j':") noblank  row("`_hoc_tab_rowtitle'") showcoleq(c)
 
 		if "`gph_options'" == "" {
 
@@ -1705,7 +1709,7 @@ exit
 ** version 3.1.7 - 17nov2022 - Add the ifc() option for plotting the Cowell and Flachaire (2007) IF curve. See Cowell and Flachaire (2007, JOE) pag. 1067
 ** version 3.1.8 - 30oct2023 - Allows the save() option with all Stata versions till 18. The workaround is the only available, suggested by Jeff Pitblado. From now on -outdetetct- runs smoothly on Stata from 14 to 18
 ** version 3.1.9 - 8may2024 - Added options graph(zipf) and graph(qqpareto)
-** version 3.2.0 - 14may2024 - Added sub-option lognormal for zipf: graph(zipf(logn))
+** version 3.2.0 - 14may2024 - Added sub-option lognormal for zipf: graph(zipf(logn)). Added GE(-1) to the list of ineq indicators. New display format.
 
 /* TODO: Look at pshare (BJ), update DASP */
 /* TODO: share bottom40, Watts */

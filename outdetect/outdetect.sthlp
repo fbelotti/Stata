@@ -404,7 +404,8 @@ the horizontal axis reports the number of trimmed observations as a percentage o
 
 {marker MV2021}{...}
 {phang}
-Belotti, F., G. Mancini, and G. Vecchi. 2022. {it:Outlier Detection for Welfare Analysis}. Unpublished manuscript, University of Rome “Tor Vergata”.
+Belotti, F., G. Mancini, and G. Vecchi. 2022. {browse "http://documents1.worldbank.org/curated/en/099536211152218834/pdf/IDU0d8c0f49d0042704e31095c7006964c6e8ce5.pdf":{it:Outlier Detection for Welfare Analysis}}.
+Policy Research working paper, 10231, Washington, DC: World Bank.
 
 {phang}
 Mancini, G. and G. Vecchi. 2022.
@@ -443,18 +444,18 @@ To report any issues, please contact Giovanni Vecchi (giovanni.vecchi@uniroma2.i
 
 {pstd}Federico Belotti{p_end}
 {pstd}Department of Economics and Finance{p_end}
-{pstd}University of Rome Tor Vergata{p_end}
+{pstd}Tor Vergata University of Rome{p_end}
 {pstd}Rome, Italy{p_end}
 {pstd}federico.belotti@uniroma2.it{p_end}
 
 {pstd}Giulia Mancini{p_end}
-{pstd}Department of Economics and Finance{p_end}
-{pstd}University of Rome Tor Vergata{p_end}
+{pstd}Department of Economics and Business{p_end}
+{pstd}University of Sassari{p_end}
 {pstd}Rome, Italy{p_end}
-{pstd}giulia.mancini@uniroma2.it{p_end}
+{pstd}gmancini@uniss.it{p_end}
 
 {pstd}Giovanni Vecchi{p_end}
 {pstd}Department of Economics and Finance{p_end}
-{pstd}University of Rome Tor Vergata{p_end}
+{pstd}Tor Vergata University of Rome{p_end}
 {pstd}Rome, Italy{p_end}
 {pstd}giovanni.vecchi@uniroma2.it{p_end}
