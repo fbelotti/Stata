@@ -1,6 +1,6 @@
 
 v 3
-d outdetect. Univariate outliers detection (version 3.2.0 - 14may2024).
+d outdetect. Univariate outliers detection (version 3.2.1 - 29may2024).
 d
 d
 d
@@ -8,7 +8,7 @@ d
 d Authors: Federico Belotti
 d Distribution-Date: 20190627
 
-* uploaded on 14 may 2024
+* uploaded on 29 may 2024
 
 f outdetect/outdetect.ado
 f outdetect/outdetect.sthlp
